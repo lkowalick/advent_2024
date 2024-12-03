@@ -3,9 +3,9 @@
 #part 1
 list1, list2 = [], []
 File.read("./day1_input.txt").each_line do |line|
-  item1, item2 = line.scan(/\d+/)
-  list1 << item1.to_i
-  list2 << item2.to_i
+  item1, item2 = line.scan(/\d+/).map(&:to_i)
+  list1 << item1
+  list2 << item2
 end
 
 list1.sort!
