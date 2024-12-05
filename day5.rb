@@ -89,3 +89,33 @@ class TestInputParse < Minitest::Test
   end
 end
 
+
+class PageOrderValidator
+  attr_reader :deps
+  def initialize(deps)
+    @deps = self.class.create_graph(deps)
+  end
+
+  class << self
+    def create_graph(deps)
+      deps.each_with_object(Hash.new([])) do |(a, b), result|
+        result[a] << b
+      end
+    end
+  end
+end
+
+class TestPageOrderValidator < Minitest::Test
+  def test_page_order_deps
+    deps = PageOrderValidator.new([%w(a b),%w(a c),%w(d e)]).deps
+    assert(deps.key?("a"))
+    assert(deps.key?("d"))
+    refute(deps.key?("h"))
+    assert_equal(%w(b c), deps["a"])
+    assert_equal(%w(e), deps["d"])
+  end
+end
+
+def compute_correct_page_order_sum(deps, updates)
+
+end
