@@ -23,79 +23,38 @@ def convert_to_grid(text)
   end
 end
 
+def xmas_or_samx?(arr)
+  [%w(X M A S), %w(S A M X)].include?(arr)
+end
+
 def count_xmas(grid)
-  number_of_horz_forward = 0
-  number_of_horz_backward = 0
+  horizontal = grid.sum do |line|
+    line.each_cons(4).count(&method(:xmas_or_samx?))
+  end
 
-  grid.each do |line|
-    line_forward = 0
-    line_backward = 0
-    line.each_cons(4) do |cons|
-      if cons == %w(X M A S)
-        number_of_horz_forward += 1
-        line_forward += 1
-      elsif cons == %w(S A M X)
-        number_of_horz_backward += 1
-        line_backward += 1
-      end
+  vertical = grid.transpose.sum do |col|
+    col.each_cons(4).count(&method(:xmas_or_samx?))
+  end
+
+  diag_dr_ul = grid.each_cons(4).sum do |row1,row2,row3,row4|
+    grid.first.each_index.each_cons(4).count do |j1,j2,j3,j4|
+      xmas_or_samx?([row1[j1],row2[j2],row3[j3],row4[j4]])
     end
   end
 
-  number_of_vertical_forward = 0
-  number_of_vertical_backward = 0
-
-  grid_t = grid.transpose
-  grid_t.each do |col|
-    col.each_cons(4) do |cons|
-      if cons == %w(X M A S)
-        number_of_vertical_forward += 1
-      elsif cons == %w(S A M X)
-        number_of_vertical_backward += 1
-      end
-    end
-  end
-
-  number_of_diag_downright = 0
-  number_of_diag_upleft = 0
-
-
-  0.upto(grid.length - 4).each do |i|
-    0.upto(grid[i].length - 4).each do |j|
-      down_right = [grid[i][j],grid[i+1][j+1],grid[i+2][j+2],grid[i+3][j+3]]
-      if down_right == %w(X M A S)
-        number_of_diag_downright += 1
-      elsif down_right == %w(S A M X)
-        number_of_diag_upleft += 1
-      end
-    end
-  end
-
-  number_of_diag_upright = 0
-  number_of_diag_downleft = 0
-  0.upto(grid.length - 4).each do |i|
-    3.upto(grid[i].length - 1).each do |j|
-      downleft = [grid[i][j],grid[i+1][j-1],grid[i+2][j-2],grid[i+3][j-3]]
-      if downleft == %w(X M A S)
-        number_of_diag_downleft += 1
-      elsif downleft == %w(S A M X)
-        number_of_diag_upright += 1
-      end
+  diag_ur_dl = grid.each_cons(4).sum do |row1,row2,row3,row4|
+    grid.first.each_index.each_cons(4).count do |j1,j2,j3,j4|
+      xmas_or_samx?([row1[j4],row2[j3],row3[j2],row4[j1]])
     end
   end
 
   [
-    number_of_horz_forward,
-    number_of_horz_backward,
-    number_of_vertical_forward,
-    number_of_vertical_backward,
-    number_of_diag_downright,
-    number_of_diag_upleft,
-    number_of_diag_upright,
-    number_of_diag_downleft,
+    horizontal,
+    vertical,
+    diag_dr_ul,
+    diag_ur_dl,
   ].sum
 end
-
-
 
 #puts "TEST RESULT: #{count_xmas(convert_to_grid(test))}"
 puts "RESULT part 1: #{count_xmas(convert_to_grid(real_input))}"
@@ -111,37 +70,22 @@ def extract_cross(grid, i_start, j_start)
   ]
 end
 
-def check_mmass(grid, i_start, j_start)
-  %w(M M A S S) == extract_cross(grid, i_start, j_start)
-end
-
-def check_ssamm(grid, i_start, j_start)
-  %w(S S A M M) == extract_cross(grid, i_start, j_start)
-end
-
-def check_msams(grid, i_start, j_start)
-  %w(M S A M S) == extract_cross(grid, i_start, j_start)
-end
-
-def check_smasm(grid, i_start, j_start)
-  %w(S M A S M) == extract_cross(grid, i_start, j_start)
-end
-
-def check_x_mas(*args)
-  check_mmass(*args) || check_ssamm(*args) || check_msams(*args) || check_smasm(*args)
+def check_x_mas(grid, i_start, j_start)
+  [
+    %w(M M A S S),
+    %w(S S A M M),
+    %w(M S A M S),
+    %w(S M A S M),
+  ].include?(extract_cross(grid, i_start, j_start))
 end
 
 def count_x_mas(grid)
-  count = 0
-  0.upto(grid.length - 3).each do |i|
-    0.upto(grid[i].length - 3).each do |j|
-      if check_x_mas(grid, i, j)
-        count += 1
-      end
+  grid.each_index.each_cons(3).sum do |i,_,_|
+    grid.first.each_index.each_cons(3).count do |j,_,_|
+      check_x_mas(grid, i, j)
     end
   end
-  count
 end
 
-puts "TEST X-MAS: #{count_x_mas(convert_to_grid(test))}"
+#puts "TEST X-MAS: #{count_x_mas(convert_to_grid(test))}"
 puts "RESULT part 2: #{count_x_mas(convert_to_grid(real_input))}"
