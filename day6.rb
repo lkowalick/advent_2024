@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require "minitest/autorun"
-FILENAME = "./day5_input.txt"
+FILENAME = "./day6_input.txt"
 
 REAL_INPUT = File.read(FILENAME)
 
@@ -19,17 +19,17 @@ TEST= <<-TEST
 TEST
 
 def input_to_grid_and_starting_position(text)
-  starting_postion = nil
+  starting_position = nil
   grid = text.each_line.each_with_index.map do |line, i|
     line.chomp.each_char.each_with_index.map do |char, j|
       if char == "^"
-        starting_postion = [i,j]
+        starting_position = [i,j]
         char = "."
       end
       char
     end
   end
-  [grid, starting_postion]
+  [grid, starting_position]
 end
 
 class TestInputParse < Minitest::Test
@@ -84,19 +84,16 @@ class Map
     0 <= pos[0] && pos[0] < height && 0 <= pos[1] && pos[1] < width
   end
 
+  def next_dir
+    (guard_dir + 1) % 4
+  end
+
   def tick
     if in_bounds?(next_pos)
-      if grid.dig(*next_pos) == "."
-        visited << next_pos
-        self.guard_pos = next_pos
-      else
-        self.guard_dir = (guard_dir + 1) % 4
-        visited << next_pos
-        self.guard_pos = next_pos
-      end
-    else
-      self.guard_pos = next_pos
+      self.guard_dir = next_dir if grid.dig(*next_pos) == "#"
+      self.visited << next_pos
     end
+    self.guard_pos = next_pos
   end
 
   def distinct_positions
@@ -133,3 +130,14 @@ class TestTestData < Minitest::Test
     )
   end
 end
+
+class TestRealData < Minitest::Test
+  def test_real_data
+    assert_equal(
+      5030,
+      calculate_distinct_positions(REAL_INPUT),
+    )
+  end
+end
+
+puts "RESULT part 1: #{calculate_distinct_positions(REAL_INPUT)}"
