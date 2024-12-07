@@ -66,14 +66,19 @@ class Map
     DOWN = 2,
     LEFT = 3,
   ]
-  attr_accessor :grid, :visited, :guard_pos, :guard_dir, :height, :width
+  attr_accessor :grid, :visited, :guard_pos, :guard_dir, :height, :width, :looped
   def initialize(grid, starting_position)
     @grid = grid
     @height = grid.length
     @width = grid.first.length
-    @visited = Set.new([starting_position])
+    @visited = Set.new([starting_position+ [UP]])
     @guard_pos = starting_position
     @guard_dir = UP
+    @looped = false
+  end
+
+  def looped?
+    looped
   end
 
   def guard_in_bounds?
@@ -89,18 +94,31 @@ class Map
   end
 
   def tick
+    while in_bounds?(next_pos) && grid.dig(*next_pos) == "#" do
+      self.guard_dir = next_dir
+    end
     if in_bounds?(next_pos)
-      self.guard_dir = next_dir if grid.dig(*next_pos) == "#"
-      self.visited << next_pos
+      if self.visited.include?(next_pos+ [guard_dir])
+        self.looped = true
+        return
+      end
+      self.visited << next_pos + [guard_dir]
     end
     self.guard_pos = next_pos
   end
 
-  def distinct_positions
-    while guard_in_bounds? do
+  def tick_until_oob_or_looped
+    while guard_in_bounds? || looped? do
       tick
     end
-    visited.length
+  end
+
+  def distinct_positions
+    visited_coords = Set.new()
+    visited.each do |i, j, dir|
+      visited_coords << [i,j]
+    end
+    visited_coords.length
   end
 
   def next_pos
@@ -119,7 +137,9 @@ end
 
 def calculate_distinct_positions(text)
   grid, starting_position = input_to_grid_and_starting_position(text)
-  Map.new(grid, starting_position).distinct_positions
+  map = Map.new(grid, starting_position)
+  map.tick_until_oob_or_loop
+  map.distinct_positions
 end
 
 class TestTestData < Minitest::Test
