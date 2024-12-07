@@ -60,7 +60,12 @@ class TestInputParse < Minitest::Test
 end
 
 class Map
-  UP, DOWN, LEFT, RIGHT = :up, :down, :left, :right
+  DIRS = [
+    UP = 0,
+    RIGHT = 1,
+    DOWN = 2,
+    LEFT = 3,
+  ]
   attr_accessor :grid, :visited, :guard_pos, :guard_dir, :height, :width
   def initialize(grid, starting_position)
     @grid = grid
@@ -71,17 +76,31 @@ class Map
     @guard_dir = UP
   end
 
-  def in_bounds?
-    0 <= guard_pos[0] && guard_pos[0] < height && 0 <= guard_pos[1] && guard_pos[1] < width
-    false
+  def guard_in_bounds?
+    in_bounds?(guard_pos)
+  end
+
+  def in_bounds?(pos)
+    0 <= pos[0] && pos[0] < height && 0 <= pos[1] && pos[1] < width
   end
 
   def tick
-    next_pos
+    if in_bounds?(next_pos)
+      if grid.dig(*next_pos) == "."
+        visited << next_pos
+        self.guard_pos = next_pos
+      else
+        self.guard_dir = (guard_dir + 1) % 4
+        visited << next_pos
+        self.guard_pos = next_pos
+      end
+    else
+      self.guard_pos = next_pos
+    end
   end
 
   def distinct_positions
-    while in_bounds? do
+    while guard_in_bounds? do
       tick
     end
     visited.length
