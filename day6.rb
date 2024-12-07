@@ -122,7 +122,7 @@ class Map
     visited.each do |i, j, dir|
       visited_coords << [i,j]
     end
-    visited_coords.length
+    visited_coords
   end
 
   def next_pos
@@ -143,7 +143,7 @@ def calculate_distinct_positions(text)
   grid, starting_position = input_to_grid_and_starting_position(text)
   map = Map.new(grid, starting_position)
   map.tick_until_oob_or_looped
-  map.distinct_positions
+  map.distinct_positions.length
 end
 
 class TestDistinctPositions < Minitest::Test
@@ -163,15 +163,15 @@ end
 
 def calculate_number_looped_obstructions(text)
   grid_static, starting_position_static = input_to_grid_and_starting_position(text)
-  0.upto(grid_static.length - 1).sum do |i|
-    0.upto(grid_static.first.length - 1).count do |j|
-      next(false) if [i, j] == starting_position_static
-      grid, starting_position = input_to_grid_and_starting_position(text)
-      map = Map.new(grid, starting_position)
-      map.add_obstruction(i,j)
-      map.tick_until_oob_or_looped
-      map.looped?
-    end
+  map = Map.new(grid_static, starting_position_static)
+  map.tick_until_oob_or_looped
+  map.distinct_positions.count do |i,j|
+    next(false) if [i, j] == starting_position_static
+    grid, starting_position = input_to_grid_and_starting_position(text)
+    map = Map.new(grid, starting_position)
+    map.add_obstruction(i,j)
+    map.tick_until_oob_or_looped
+    map.looped?
   end
 end
 
@@ -182,7 +182,12 @@ class TestNumberLoopedObstructions < Minitest::Test
       calculate_number_looped_obstructions(TEST)
     )
   end
+
+  def test_real_data
+    assert_equal(
+      1928,
+      calculate_number_looped_obstructions(REAL_INPUT)
+    )
+  end
 end
 
-
-#puts "RESULT part 1: #{calculate_distinct_positions(REAL_INPUT)}"
