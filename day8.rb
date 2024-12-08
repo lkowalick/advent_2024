@@ -99,5 +99,10 @@ Class.new(Minitest::Test) do
       14,
       count_inbounds_antinodes(parse_input(test_data)),
     )
+
+    assert_equal(
+      392,
+      count_inbounds_antinodes(parse_input(real_input)),
+    )
   end
 end
