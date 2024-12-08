@@ -38,7 +38,7 @@ def parse_input(text)
   ParsedInput.new(height, width, stations)
 end
 
-def compute_antinodes(pos1, pos2)
+def compute_antinodes1(pos1, pos2)
   x1, y1 = pos1
   x2, y2 = pos2
   dx = x2 - x1
@@ -49,13 +49,50 @@ def compute_antinodes(pos1, pos2)
   ]
 end
 
+def compute_antinodes2(pos1, pos2, height, width)
+  x1, y1 = pos1
+  x2, y2 = pos2
+  dx = x2 - x1
+  dy = y2 - y1
+  result = [pos1, pos2]
+  (1..).each do |i|
+    new_x, new_y = pos2[0]+i*dx,pos2[1]+i*dy
+    if 0 <= new_x && new_x < height && 0 <= new_y && new_y < width
+      result << [new_x, new_y]
+    else
+      break
+    end
+  end
+  (1..).each do |i|
+    new_x, new_y = pos1[0]-i*dx,pos1[1]-i*dy
+    if 0 <= new_x && new_x < height && 0 <= new_y && new_y < width
+      result << [new_x, new_y]
+    else
+      break
+    end
+  end
+  result
+end
 
-def count_inbounds_antinodes(parsed_input)
+def count_inbounds_antinodes1(parsed_input)
   height, width = parsed_input.height, parsed_input.width
   antinodes = Set.new
   parsed_input.stations.each do |station, positions|
     positions.combination(2).each do |pos1, pos2|
-      antinodes += compute_antinodes(pos1, pos2)
+      antinodes += compute_antinodes1(pos1, pos2)
+    end
+  end
+  antinodes.count do |an|
+    0 <= an[0] && an[0] < height && 0 <= an[1] && an[1] < width
+  end
+end
+
+def count_inbounds_antinodes2(parsed_input)
+  height, width = parsed_input.height, parsed_input.width
+  antinodes = Set.new
+  parsed_input.stations.each do |station, positions|
+    positions.combination(2).each do |pos1, pos2|
+      antinodes += compute_antinodes2(pos1, pos2, height, width)
     end
   end
   antinodes.count do |an|
@@ -90,19 +127,30 @@ Class.new(Minitest::Test) do
   define_method :test_compute_antinodes do
     assert_equal(
       [[0,0],[9,12]],
-      compute_antinodes([3,4],[6,8])
+      compute_antinodes1([3,4],[6,8])
     )
   end
 
-  define_method :test_compute_inbounds_antinodes do
+  define_method :test_compute_inbounds_antinodes1 do
     assert_equal(
       14,
-      count_inbounds_antinodes(parse_input(test_data)),
+      count_inbounds_antinodes1(parse_input(test_data)),
     )
 
     assert_equal(
       392,
-      count_inbounds_antinodes(parse_input(real_input)),
+      count_inbounds_antinodes1(parse_input(real_input)),
+    )
+  end
+
+  define_method :test_compute_inbounds_antinodes2 do
+    assert_equal(
+      34,
+      count_inbounds_antinodes2(parse_input(test_data))
+    )
+    assert_equal(
+      1235,
+      count_inbounds_antinodes2(parse_input(real_input))
     )
   end
 end
