@@ -35,9 +35,34 @@ def parse_input(text)
     end
   end
 
-
   ParsedInput.new(height, width, stations)
 end
+
+def compute_antinodes(pos1, pos2)
+  x1, y1 = pos1
+  x2, y2 = pos2
+  dx = x2 - x1
+  dy = y2 - y1
+  [
+    [pos1[0] - dx, pos1[1] - dy],
+    [pos2[0] + dx, pos2[1] + dy],
+  ]
+end
+
+
+def count_inbounds_antinodes(parsed_input)
+  height, width = parsed_input.height, parsed_input.width
+  antinodes = Set.new
+  parsed_input.stations.each do |station, positions|
+    positions.combination(2).each do |pos1, pos2|
+      antinodes += compute_antinodes(pos1, pos2)
+    end
+  end
+  antinodes.count do |an|
+    0 <= an[0] && an[0] < height && 0 <= an[1] && an[1] < width
+  end
+end
+
 
 
 Class.new(Minitest::Test) do
@@ -59,6 +84,20 @@ Class.new(Minitest::Test) do
     assert_equal(
       [[5,6],[8,8],[9,9]],
       parse_input(test_data).stations["A"]
+    )
+  end
+
+  define_method :test_compute_antinodes do
+    assert_equal(
+      [[0,0],[9,12]],
+      compute_antinodes([3,4],[6,8])
+    )
+  end
+
+  define_method :test_compute_inbounds_antinodes do
+    assert_equal(
+      14,
+      count_inbounds_antinodes(parse_input(test_data)),
     )
   end
 end
