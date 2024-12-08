@@ -24,9 +24,14 @@ TEST
 Result = Struct.new(:height, :width, :stations)
 def parse_input(text)
   height = text.each_line.count
+  width = 0
+  text.each_line do |line|
+    width = line.chomp.length
+    break
+  end
 
 
-  Result.new(height, 0, [])
+  Result.new(height, width, [])
 end
 
 
@@ -35,6 +40,11 @@ Class.new(Minitest::Test) do
     assert_equal(
       12,
       parse_input(test_data).height,
+    )
+
+    assert_equal(
+      12,
+      parse_input(test_data).width,
     )
   end
 end
