@@ -21,7 +21,7 @@ test_data = <<-TEST
 ............
 TEST
 
-Result = Struct.new(:height, :width, :stations)
+ParsedInput = Struct.new(:height, :width, :stations)
 def parse_input(text)
   height = text.each_line.count
   width = 0
@@ -36,7 +36,7 @@ def parse_input(text)
   end
 
 
-  Result.new(height, width, stations)
+  ParsedInput.new(height, width, stations)
 end
 
 
