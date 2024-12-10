@@ -33,6 +33,35 @@ def sum_trailhead_scores(grid)
   end.sum
 end
 
+def sum_trailhead_ratings(grid)
+  grid.each_index.flat_map do |i|
+    grid[i].each_index.map do |j|
+      next(0) unless grid[i][j] == 0
+      count_paths(grid, i, j)
+    end
+  end.sum
+end
+
+def path_helper(grid, paths, i, j, current_path)
+  return unless grid[i][j] == current_path.length
+  current_path << [i,j]
+  if grid[i][j] == 9
+    paths << current_path
+  else
+    neighbors(grid, i, j).each do |ni, nj|
+      path_helper(grid, paths, ni, nj, current_path.dup)
+    end
+  end
+end
+
+def count_paths(grid, i, j)
+  paths = Set.new
+
+  path_helper(grid, paths, i ,j, [])
+  paths.length
+end
+
+
 def count_summits(grid, i, j)
   summits = Set.new
   visited = Set.new
@@ -77,9 +106,24 @@ Class.new(Minitest::Test) do
       36,
       sum_trailhead_scores(parse_input(test_data)),
     )
+
+    assert_equal(
+      674,
+      sum_trailhead_scores(parse_input(real_input)),
+    )
   end
+  define_method :test_sum_trailhead_ratings do
+    assert_equal(
+      81,
+      sum_trailhead_ratings(parse_input(test_data)),
+    )
+    assert_equal(
+      1372,
+      sum_trailhead_ratings(parse_input(real_input)),
+    )
+  end
+
 end
 
-puts "part1: #{sum_trailhead_scores(parse_input(real_input))}"
 
 
