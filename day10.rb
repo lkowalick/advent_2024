@@ -2,7 +2,7 @@
 
 require "minitest/autorun"
 
-FILENAME = "./day9_input.txt"
+FILENAME = "./day10_input.txt"
 
 real_input = File.read(FILENAME)
 
@@ -20,7 +20,38 @@ TEST
 
 def parse_input(text)
   text.each_line.map do |line|
-    line.chomp.each_char.to_a
+    line.chomp.each_char.map(&:to_i).to_a
+  end
+end
+
+def sum_trailhead_scores(grid)
+  grid.each_index.flat_map do |i|
+    grid[i].each_index.map do |j|
+      next(0) unless grid[i][j] == 0
+      count_summits(grid, i, j)
+    end
+  end.sum
+end
+
+def count_summits(grid, i, j)
+  summits = Set.new
+  visited = Set.new
+  stack = [[i,j]]
+  while stack.length > 0
+    ci,cj = stack.pop
+    next if visited.include?([ci,cj])
+    visited << [ci,cj]
+    summits << [ci,cj] if grid[ci][cj] == 9
+    neighbors(grid, ci, cj).each do |ni, nj|
+      stack << [ni,nj] if grid[ni][nj] == grid[ci][cj] + 1
+    end
+  end
+  summits.length
+end
+
+def neighbors(grid, i, j)
+  [[i+1,j],[i-1,j],[i,j+1],[i,j-1]].filter do |i, j|
+    0 <= i && i < grid.length && 0 <= j && j < grid.first.length
   end
 end
 
@@ -28,19 +59,27 @@ Class.new(Minitest::Test) do
   define_method :test_parse_input do
     assert_equal(
       [
-      %w(8 9 0 1 0 1 2 3),
-      %w(7 8 1 2 1 8 7 4),
-      %w(8 7 4 3 0 9 6 5),
-      %w(9 6 5 4 9 8 7 4),
-      %w(4 5 6 7 8 9 0 3),
-      %w(3 2 0 1 9 0 1 2),
-      %w(0 1 3 2 9 8 0 1),
-      %w(1 0 4 5 6 7 3 2),
+        [8, 9, 0, 1, 0, 1, 2, 3],
+        [7, 8, 1, 2, 1, 8, 7, 4],
+        [8, 7, 4, 3, 0, 9, 6, 5],
+        [9, 6, 5, 4, 9, 8, 7, 4],
+        [4, 5, 6, 7, 8, 9, 0, 3],
+        [3, 2, 0, 1, 9, 0, 1, 2],
+        [0, 1, 3, 2, 9, 8, 0, 1],
+        [1, 0, 4, 5, 6, 7, 3, 2],
       ],
       parse_input(test_data),
     )
   end
+
+  define_method :test_sum_trailhead_scores do
+    assert_equal(
+      36,
+      sum_trailhead_scores(parse_input(test_data)),
+    )
+  end
 end
 
+puts "part1: #{sum_trailhead_scores(parse_input(real_input))}"
 
 
