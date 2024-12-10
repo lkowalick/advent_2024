@@ -32,16 +32,21 @@ def parse_input(text)
   Struct.new(:disk, :free_space, :ids).new(disk, free_space, ids)
 end
 
-
-def compute_checksum(parsed_input)
+def compactify_and_compute_checksum(parsed_input)
   disk, free_space = parsed_input.disk, parsed_input.free_space
   disk = compactify_disk(disk, free_space)
-  result = 0
-  disk.each_with_index do |datum, i|
-    next if datum == -1
-    result += datum * i
-  end
-  result
+  compute_checksum(disk)
+end
+
+
+def compute_checksum(disk)
+  disk.each_with_index.map do |datum, i|
+    if datum == -1
+      0
+    else
+      datum * i
+    end
+  end.sum
 end
 
 def compactify_disk(disk, free_space)
@@ -97,9 +102,13 @@ Class.new(Minitest::Test) do
   define_method :test_compute_checksum do
     assert_equal(
       1928,
-      compute_checksum(parse_input(test_data_2)),
+      compactify_and_compute_checksum(parse_input(test_data_2)),
+    )
+
+    assert_equal(
+      6349606724455,
+      compactify_and_compute_checksum(parse_input(real_input)),
     )
   end
 end
 
-puts "part 1: #{compute_checksum(parse_input(real_input))}"
