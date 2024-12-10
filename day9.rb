@@ -14,18 +14,19 @@ ParsedInput = Struct.new(:disk, :free_space, :ids)
 def parse_input(text)
   disk = []
   free_space = 0
-  ids = Set.new()
+  ids = {}
   text.chomp.each_char.each_slice(2).with_index do |slice, id|
-    ids << id.to_s
+    ids[id] = [disk.length]
     block_size = slice[0].to_i
     block_size.times { disk << id }
+    ids[id] << disk.length
     next unless slice[1]
     free_size = slice[1].to_i
     free_size.times { disk << -1 }
     free_space += free_size
   end
 
-  ParsedInput.new(disk, free_space, ids.to_a)
+  ParsedInput.new(disk, free_space, ids)
 end
 
 
@@ -34,8 +35,8 @@ end
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     assert_equal(
-      %w(0 1 2 3 4 5 6 7 8 9),
-      parse_input(test_data).ids
+      [0,1,2,3,4,5,6,7,8,9],
+      parse_input(test_data).ids.keys
     )
     assert_equal(
       14,
