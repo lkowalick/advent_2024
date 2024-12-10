@@ -14,7 +14,6 @@ test_data_2= <<-TEST
 2333133121414131402
 TEST
 
-ParsedInput = Struct.new(:disk, :free_space, :ids)
 def parse_input(text)
   disk = []
   free_space = 0
@@ -30,12 +29,41 @@ def parse_input(text)
     free_space += free_size
   end
 
-  ParsedInput.new(disk, free_space, ids)
+  Struct.new(:disk, :free_space, :ids).new(disk, free_space, ids)
 end
 
 
+def compute_checksum(parsed_input)
+  disk, free_space = parsed_input.disk, parsed_input.free_space
+  disk = compactify_disk(disk, free_space)
+  result = 0
+  disk.each_with_index do |datum, i|
+    next if datum == -1
+    result += datum * i
+  end
+  result
+end
 
-
+def compactify_disk(disk, free_space)
+  left, right = 0, disk.length - 1
+  # invariants at start of loop
+  # right always points to non-freespace disk[right] != -1
+  #puts "            #{disk.each_index.map {|i| "%#{disk[i].to_s.length+1}d" % i }.join(",")}"
+  #puts "COMACTIFYING #{disk.inspect}"
+  while free_space > 0 && left < right
+    raise("right not right: #{right}: #{disk[right]}") if disk[right] == -1
+    if disk[left] == -1
+  #    puts "swapping disk[#{left}] == #{disk[left]} with disk[#{right}] == #{disk[right]} with freespace #{free_space}"
+      disk[left], disk[right] = disk[right], disk[left]
+      free_space -= 1
+      begin
+        right -= 1
+      end while disk[right] == -1
+    end
+    left += 1
+  end
+  disk
+end
 
 
 Class.new(Minitest::Test) do
@@ -57,4 +85,21 @@ Class.new(Minitest::Test) do
       parse_input(test_data_2).free_space,
     )
   end
+
+  define_method :test_compactify_disk do
+    input = parse_input(test_data_1)
+    assert_equal(
+      [0,2,2,1,1,1,2,2,2,-1,-1,-1,-1,-1,-1],
+      compactify_disk(input.disk, input.free_space),
+    )
+  end
+
+  define_method :test_compute_checksum do
+    assert_equal(
+      1928,
+      compute_checksum(parse_input(test_data_2)),
+    )
+  end
 end
+
+puts "part 1: #{compute_checksum(parse_input(real_input))}"
