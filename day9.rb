@@ -6,7 +6,11 @@ FILENAME = "./day9_input.txt"
 
 real_input = File.read(FILENAME)
 
-test_data = <<-TEST
+test_data_1 = <<-TEST
+12345
+TEST
+
+test_data_2= <<-TEST
 2333133121414131402
 TEST
 
@@ -32,15 +36,25 @@ end
 
 
 
+
+
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     assert_equal(
+      [0,1,2],
+      parse_input(test_data_1).ids.keys
+    )
+    assert_equal(
+      6,
+      parse_input(test_data_1).free_space,
+    )
+    assert_equal(
       [0,1,2,3,4,5,6,7,8,9],
-      parse_input(test_data).ids.keys
+      parse_input(test_data_2).ids.keys
     )
     assert_equal(
       14,
-      parse_input(test_data).free_space,
+      parse_input(test_data_2).free_space,
     )
   end
 end
