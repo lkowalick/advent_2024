@@ -33,6 +33,22 @@ def sum_trailhead_scores(grid)
   end.sum
 end
 
+def count_summits(grid, i, j)
+  summits = Set.new
+  visited = Set.new
+  stack = [[i,j]]
+  while stack.length > 0
+    ci,cj = stack.pop
+    next if visited.include?([ci,cj])
+    visited << [ci,cj]
+    summits << [ci,cj] if grid[ci][cj] == 9
+    neighbors(grid, ci, cj).each do |ni, nj|
+      stack << [ni,nj] if grid[ni][nj] == grid[ci][cj] + 1
+    end
+  end
+  summits.length
+end
+
 def sum_trailhead_ratings(grid)
   grid.each_index.flat_map do |i|
     grid[i].each_index.map do |j|
@@ -62,21 +78,6 @@ def count_paths(grid, i, j)
 end
 
 
-def count_summits(grid, i, j)
-  summits = Set.new
-  visited = Set.new
-  stack = [[i,j]]
-  while stack.length > 0
-    ci,cj = stack.pop
-    next if visited.include?([ci,cj])
-    visited << [ci,cj]
-    summits << [ci,cj] if grid[ci][cj] == 9
-    neighbors(grid, ci, cj).each do |ni, nj|
-      stack << [ni,nj] if grid[ni][nj] == grid[ci][cj] + 1
-    end
-  end
-  summits.length
-end
 
 def neighbors(grid, i, j)
   [[i+1,j],[i-1,j],[i,j+1],[i,j-1]].filter do |i, j|
