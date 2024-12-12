@@ -23,15 +23,40 @@ def evolve(list)
   end
 end
 
+MEMO = {}
+
 def evolve_n(list, n)
-  result = list
-  n.times { result = evolve(result) }
-  result
+  return list.length if n == 0
+  result = list.sum do |elt|
+    unless MEMO.key?([[elt],n])
+      MEMO[[[elt],n]] =  evolve_n(evolve([elt]), n-1)
+    end
+    MEMO[[[elt],n]]
+  end
+  MEMO[[list,n]] = result
 end
 
 def stone_count_after_n_evolutions(list, n)
-  evolve_n(list, n).length
+  evolve_n(list, n)
 end
+
+=begin
+0.upto(9) do |i|
+  puts "EVOLVING FOR #{i}"
+  evolve_n([i], 40)
+  evolve_n([i * 2024], 40)
+end
+100.upto(999) do |i|
+  puts "EVOLVING FOR #{i}"
+  evolve_n([i], 40)
+  evolve_n([i * 2024], 40)
+end
+10_000.upto(99_999) do |i|
+  puts "EVOLVING FOR #{i}"
+  evolve_n([i], 20)
+  evolve_n([i * 2024], 20)
+end
+=end
 
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
@@ -73,3 +98,8 @@ Class.new(Minitest::Test) do
     )
   end
 end
+
+puts "RESULT2: #{stone_count_after_n_evolutions(parse_input(real_data), 75)}"
+
+#puts MEMO.length
+
