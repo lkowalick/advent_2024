@@ -32,9 +32,28 @@ def parse_input(text)
   end
 end
 
+# a_dx * A + b_dx * B = x
+#
+# A = ( x - b_dx * B ) / a_dx
+#
+# a_dy * (x - b_dx*B)/a_dx + b_dy*B = y
+#
+# a_dy * x / a_dx - a_dy*b_dx*B / a_dx + b_dy*B = y
+#
+# B * ( b_dy - (a_dy * b_dx)/a_dx) = y - a_dy * x / a_dx
+#
+# B = y - 
+
 def solve(system)
-  { a: 0, b: 0 }
+  system => { a_dx:, a_dy:, b_dx:, b_dy:, x:, y: }
+  b = (a_dx*y - a_dy*x)/(a_dx*b_dy - a_dy*b_dx)
+  a = (x - b_dx*b)/a_dx
+  if a*a_dx + b*b_dx == x && a*a_dy + b*b_dy == y
+    return { a:, b: }
+  end
+  {a: 0, b: 0}
 end
+
 
 def compute_cost(systems)
   systems.sum do |system|
@@ -76,5 +95,4 @@ Class.new(Minitest::Test) do
   end
 end
 
-
-
+puts "PART 1: #{compute_cost(parse_input(real_input))}"
