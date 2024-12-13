@@ -32,6 +32,15 @@ def parse_input(text)
   end
 end
 
+def parse_input2(text)
+  text.split("\n\n").map do |chunk|
+    a_dx, a_dy, b_dx, b_dy, x, y = chunk.scan(/\d+/).map(&:to_i)
+    x += 10000000000000
+    y += 10000000000000
+    { a_dx:, a_dy:, b_dx:, b_dy:, x:, y: }
+  end
+end
+
 # a_dx * A + b_dx * B = x
 #
 # A = ( x - b_dx * B ) / a_dx
@@ -75,6 +84,19 @@ Class.new(Minitest::Test) do
     )
   end
 
+  define_method :test_parse_input2 do
+    assert_equal(
+      [
+        { a_dx: 94, b_dx: 22, a_dy: 34, b_dy: 67, x: 10000000008400, y: 10000000005400 },
+        { a_dx: 26, b_dx: 67, a_dy: 66, b_dy: 21, x: 10000000012748, y: 10000000012176 },
+        { a_dx: 17, b_dx: 84, a_dy: 86, b_dy: 37, x: 10000000007870, y: 10000000006450 },
+        { a_dx: 69, b_dx: 27, a_dy: 23, b_dy: 71, x: 10000000018641, y: 10000000010279 },
+      ],
+      parse_input2(test_data),
+    )
+  end
+
+
   define_method :test_solve do
     assert_equal(
       { a: 80, b: 40 },
@@ -93,6 +115,12 @@ Class.new(Minitest::Test) do
       solve({ a_dx: 69, b_dx: 27, a_dy: 23, b_dy: 71, x: 18641, y: 10279 }),
     )
   end
+
+  define_method :test_pat1 do
+    assert_equal(
+      29187,
+      compute_cost(parse_input(real_input))
+    )
+  end
 end
 
-puts "PART 1: #{compute_cost(parse_input(real_input))}"
