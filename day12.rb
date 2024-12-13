@@ -41,18 +41,56 @@ def count_regions(grid)
   grid.each_index.sum do |i|
     grid.first.each_index.sum do |j|
       next(0) if grid[i][j] == VISITED
-      visit(grid, i ,j, grid[i][j])
+      visit(grid, i ,j, grid[i][j], Set.new)
       1
     end
   end
 end
 
-def visit(grid, i, j, initial_value)
+def total_cost(grid)
+  grid.each_index.sum do |i|
+    grid.first.each_index.sum do |j|
+      next(0) if grid[i][j] == VISITED
+      region_members = Set.new
+      visit(grid, i ,j, grid[i][j], region_members)
+      tabulate_cost(region_members)
+    end
+  end
+end
+
+def tabulate_cost(region_members)
+  perimeter_edges = Set.new
+  region_members.each do |i,j|
+    edges(i,j).each do |edge|
+      if perimeter_edges.member?(edge)
+        perimeter_edges.delete(edge)
+      else
+        perimeter_edges << edge
+      end
+    end
+  end
+  perimeter_edges.length * region_members.length
+end
+
+def visit(grid, i, j, initial_value, region_members)
   return unless grid[i][j] == initial_value
   grid[i][j] = VISITED
+  region_members << [i,j]
   neighbors(grid, i ,j).each do |n_i, n_j|
-    visit(grid, n_i, n_j, initial_value)
+    visit(grid, n_i, n_j, initial_value, region_members)
   end
+end
+
+# edges are sorted pairs of grid positions
+# NOTE: the edges of the grid are represented by
+# out-of-bounds grid positions
+def edges(i,j)
+  [
+    [[i-1,j],[i,j]],
+    [[i,j-1],[i,j]],
+    [[i,j],[i+1,j]],
+    [[i,j],[i,j+1]],
+  ]
 end
 
 def neighbors(grid, i, j)
@@ -104,9 +142,15 @@ Class.new(Minitest::Test) do
   end
 
   define_method :test_count_regions do
-    assert_equal(5, count_regions(parse_input(test_data_1)))
-    assert_equal(5, count_regions(parse_input(test_data_2)))
+    assert_equal(5,  count_regions(parse_input(test_data_1)))
+    assert_equal(5,  count_regions(parse_input(test_data_2)))
     assert_equal(11, count_regions(parse_input(test_data_3)))
+  end
+  define_method :test_total_cost do
+    assert_equal(140,   total_cost(parse_input(test_data_1)))
+    assert_equal(772,   total_cost(parse_input(test_data_2)))
+    assert_equal(1_930, total_cost(parse_input(test_data_3)))
+    assert_equal(1_449_902, total_cost(parse_input(real_data)))
   end
 end
 
