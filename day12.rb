@@ -38,7 +38,29 @@ def parse_input(text)
 end
 
 def count_regions(grid)
-  1
+  grid.each_index.sum do |i|
+    grid.first.each_index.sum do |j|
+      next(0) if grid[i][j] == VISITED
+      visit(grid, i ,j, grid[i][j])
+      1
+    end
+  end
+end
+
+def visit(grid, i, j, initial_value)
+  return unless grid[i][j] == initial_value
+  grid[i][j] = VISITED
+  neighbors(grid, i ,j).each do |n_i, n_j|
+    visit(grid, n_i, n_j, initial_value)
+  end
+end
+
+def neighbors(grid, i, j)
+  [
+    [i+1,j],[i-1,j],[i,j+1],[i,j-1],
+  ].filter do |x,y|
+    0 <= x && x < grid.length && 0 <= y && y < grid.first.length
+  end
 end
 
 Class.new(Minitest::Test) do
