@@ -32,6 +32,10 @@ def parse_input(text)
   end
 end
 
+def solve(system)
+  { a: 0, b: 0 }
+end
+
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     assert_equal(
@@ -42,6 +46,25 @@ Class.new(Minitest::Test) do
         { a_dx: 69, b_dx: 27, a_dy: 23, b_dy: 71, x: 18641, y: 10279 },
       ],
       parse_input(test_data),
+    )
+  end
+
+  define_method :test_solve do
+    assert_equal(
+      { a: 80, b: 40 },
+      solve({ a_dx: 94, b_dx: 22, a_dy: 34, b_dy: 67, x: 8400, y: 5400 }),
+    )
+    assert_equal(
+      { a: 0, b: 0 },
+      solve({ a_dx: 26, b_dx: 67, a_dy: 66, b_dy: 21, x: 12748, y: 12176 }),
+    )
+    assert_equal(
+      { a: 38, b: 86 },
+      solve({ a_dx: 17, b_dx: 84, a_dy: 86, b_dy: 37, x: 7870, y: 6450 }),
+    )
+    assert_equal(
+      { a: 0, b: 0 },
+      solve({ a_dx: 69, b_dx: 27, a_dy: 23, b_dy: 71, x: 18641, y: 10279 }),
     )
   end
 end
