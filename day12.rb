@@ -37,6 +37,9 @@ def parse_input(text)
   text.each_line.map { |l| l.chomp.each_char.to_a }
 end
 
+def count_regions(grid)
+  1
+end
 
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
@@ -76,6 +79,12 @@ Class.new(Minitest::Test) do
       ],
       parse_input(test_data_3),
     )
+  end
+
+  define_method :test_count_regions do
+    assert_equal(5, count_regions(parse_input(test_data_1)))
+    assert_equal(5, count_regions(parse_input(test_data_2)))
+    assert_equal(11, count_regions(parse_input(test_data_3)))
   end
 end
 
