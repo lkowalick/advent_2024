@@ -36,6 +36,13 @@ def solve(system)
   { a: 0, b: 0 }
 end
 
+def compute_cost(systems)
+  systems.sum do |system|
+    solution = solve(system)
+    3 * solution[:a] + solution[:b]
+  end
+end
+
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     assert_equal(
