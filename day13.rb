@@ -51,7 +51,7 @@ end
 #
 # B * ( b_dy - (a_dy * b_dx)/a_dx) = y - a_dy * x / a_dx
 #
-# B = y - 
+# B = ( a_dx * y - a_dy*x) / (a_dx*b_dy - a_dy*b_dx)
 
 def solve(system)
   system => { a_dx:, a_dy:, b_dx:, b_dy:, x:, y: }
