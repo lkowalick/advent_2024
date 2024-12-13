@@ -116,11 +116,20 @@ Class.new(Minitest::Test) do
     )
   end
 
-  define_method :test_pat1 do
+  define_method :test_part1 do
     assert_equal(
       29187,
       compute_cost(parse_input(real_input))
     )
   end
+
+  define_method :test_part2 do
+    assert_equal(
+      99968222587852,
+      compute_cost(parse_input(real_input))
+    )
+  end
 end
+
+puts "part 2: #{compute_cost(parse_input2(real_input))}"
 
