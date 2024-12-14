@@ -62,7 +62,7 @@ end
 
 def compute_quadrant_test(pos)
   x, y = pos
-  return nil if x == 5 or y == 3
+  return nil if x == 5 || y == 3
   if TEST_Q1_X.include?(x)
     if TEST_Q1_Y.include?(y)
       1
@@ -80,6 +80,7 @@ end
 
 def compute_quadrant_real(pos)
   x, y = pos
+  return nil if x == 51 || y == 50
   if REAL_Q1_X.include?(x)
     if REAL_Q1_Y.include?(y)
       1
@@ -118,8 +119,20 @@ Class.new(Minitest::Test) do
 
   define_method :test_compute_quadrant do
     assert_equal(1, compute_quadrant_test([0,0]))
+    assert_equal(1, compute_quadrant_test([0,0]))
+    assert_equal(2, compute_quadrant_test([8,0]))
+    assert_equal(3, compute_quadrant_test([8,5]))
+    assert_equal(4, compute_quadrant_test([0,5]))
     assert_nil(compute_quadrant_test([5,0]))
     assert_nil(compute_quadrant_test([0,3]))
+
+    assert_equal(1, compute_quadrant_real([0,0]))
+    assert_equal(1, compute_quadrant_real([0,0]))
+    assert_equal(2, compute_quadrant_real([70,0]))
+    assert_equal(3, compute_quadrant_real([70,70]))
+    assert_equal(4, compute_quadrant_real([0,70]))
+    assert_nil(compute_quadrant_real([51,0]))
+    assert_nil(compute_quadrant_real([0,50]))
   end
 end
 
