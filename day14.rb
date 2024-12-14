@@ -15,16 +15,6 @@ TEST_Q1_Y, TEST_Q2_Y = (0..2), (4..6)
 REAL_Q1_X, REAL_Q2_X = (0..50), (52..102)
 REAL_Q1_Y, REAL_Q2_Y = (0..49), (51..100)
 
-TEST_QUAD_1 = [TEST_Q1_X, TEST_Q1_Y]
-TEST_QUAD_2 = [TEST_Q2_X, TEST_Q1_Y]
-TEST_QUAD_3 = [TEST_Q2_X, TEST_Q2_Y]
-TEST_QUAD_4 = [TEST_Q1_X, TEST_Q2_Y]
-
-REAL_QUAD_1 = [REAL_Q1_X, REAL_Q1_Y]
-REAL_QUAD_2 = [REAL_Q2_X, REAL_Q1_Y]
-REAL_QUAD_3 = [REAL_Q2_X, REAL_Q2_Y]
-REAL_QUAD_4 = [REAL_Q1_X, REAL_Q2_Y]
-
 test_data = <<-TEST
 p=0,4 v=3,-3
 p=6,3 v=-1,-3
@@ -52,48 +42,28 @@ def compute_final_position(robot, height, width)
   [(x + 100*dx) % width, (y + 100*dy) % height]
 end
 
-def compute_quadrant(pos, test = true)
-  if test
-    compute_quadrant_test(pos)
-  else
-    compute_quadrant_real(pos)
-  end
+def compute_safety_factor_test(robots)
+  robots.map do |robot|
+    compute_quadrant_test(compute_final_position(robot, TEST_HEIGHT, TEST_WIDTH))
+  end.compact.tally.values.reduce(:*)
+end
+
+def compute_safety_factor_real(robots)
+  robots.map do |robot|
+    compute_quadrant_real(compute_final_position(robot, REAL_HEIGHT, REAL_WIDTH))
+  end.compact.tally.values.reduce(:*)
 end
 
 def compute_quadrant_test(pos)
   x, y = pos
   return nil if x == 5 || y == 3
-  if TEST_Q1_X.include?(x)
-    if TEST_Q1_Y.include?(y)
-      1
-    else
-      4
-    end
-  else
-    if TEST_Q1_Y.include?(y)
-      2
-    else
-      3
-    end
-  end
+  [TEST_Q1_X.include?(x), TEST_Q1_Y.include?(y)]
 end
 
 def compute_quadrant_real(pos)
   x, y = pos
   return nil if x == 51 || y == 50
-  if REAL_Q1_X.include?(x)
-    if REAL_Q1_Y.include?(y)
-      1
-    else
-      4
-    end
-  else
-    if REAL_Q1_Y.include?(y)
-      2
-    else
-      3
-    end
-  end
+  [REAL_Q1_X.include?(x), REAL_Q1_Y.include?(y)]
 end
 
 Class.new(Minitest::Test) do
@@ -118,21 +88,27 @@ Class.new(Minitest::Test) do
   end
 
   define_method :test_compute_quadrant do
-    assert_equal(1, compute_quadrant_test([0,0]))
-    assert_equal(1, compute_quadrant_test([0,0]))
-    assert_equal(2, compute_quadrant_test([8,0]))
-    assert_equal(3, compute_quadrant_test([8,5]))
-    assert_equal(4, compute_quadrant_test([0,5]))
+    assert_equal([true,true], compute_quadrant_test([0,0]))
+    assert_equal([true,true], compute_quadrant_test([0,0]))
+    assert_equal([false,true], compute_quadrant_test([8,0]))
+    assert_equal([false,false], compute_quadrant_test([8,5]))
+    assert_equal([true,false], compute_quadrant_test([0,5]))
     assert_nil(compute_quadrant_test([5,0]))
     assert_nil(compute_quadrant_test([0,3]))
 
-    assert_equal(1, compute_quadrant_real([0,0]))
-    assert_equal(1, compute_quadrant_real([0,0]))
-    assert_equal(2, compute_quadrant_real([70,0]))
-    assert_equal(3, compute_quadrant_real([70,70]))
-    assert_equal(4, compute_quadrant_real([0,70]))
+    assert_equal([true,true], compute_quadrant_real([0,0]))
+    assert_equal([true,true], compute_quadrant_real([0,0]))
+    assert_equal([false,true], compute_quadrant_real([70,0]))
+    assert_equal([false,false], compute_quadrant_real([70,70]))
+    assert_equal([true,false], compute_quadrant_real([0,70]))
     assert_nil(compute_quadrant_real([51,0]))
     assert_nil(compute_quadrant_real([0,50]))
   end
+
+  define_method :test_compute_safety_factor_test do
+    assert_equal(12, compute_safety_factor_test(parse_input(test_data)))
+  end
 end
+
+puts "PART 1: #{compute_safety_factor_real(parse_input(real_input))}"
 
