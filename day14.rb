@@ -6,8 +6,24 @@ FILENAME = "./day14_input.txt"
 
 real_input = File.read(FILENAME)
 
-real_height, real_width = 103, 101
-test_height, test_width = 7, 11
+REAL_HEIGHT, REAL_WIDTH = 103, 101
+TEST_HEIGHT, TEST_WIDTH = 7, 11
+
+TEST_Q1_X, TEST_Q2_X = (0..4), (6..10)
+TEST_Q1_Y, TEST_Q2_Y = (0..2), (4..6)
+
+REAL_Q1_X, REAL_Q2_X = (0..50), (52..102)
+REAL_Q1_Y, REAL_Q2_Y = (0..49), (51..100)
+
+TEST_QUAD_1 = [TEST_Q1_X, TEST_Q1_Y]
+TEST_QUAD_2 = [TEST_Q2_X, TEST_Q1_Y]
+TEST_QUAD_3 = [TEST_Q2_X, TEST_Q2_Y]
+TEST_QUAD_4 = [TEST_Q1_X, TEST_Q2_Y]
+
+REAL_QUAD_1 = [REAL_Q1_X, REAL_Q1_Y]
+REAL_QUAD_2 = [REAL_Q2_X, REAL_Q1_Y]
+REAL_QUAD_3 = [REAL_Q2_X, REAL_Q2_Y]
+REAL_QUAD_4 = [REAL_Q1_X, REAL_Q2_Y]
 
 test_data = <<-TEST
 p=0,4 v=3,-3
@@ -31,6 +47,54 @@ def parse_input(text)
   end
 end
 
+def compute_final_position(robot, height, width)
+  robot => { x:, y:, dx:, dy: }
+  [(x + 100*dx) % width, (y + 100*dy) % height]
+end
+
+def compute_quadrant(pos, test = true)
+  if test
+    compute_quadrant_test(pos)
+  else
+    compute_quadrant_real(pos)
+  end
+end
+
+def compute_quadrant_test(pos)
+  x, y = pos
+  return nil if x == 5 or y == 3
+  if TEST_Q1_X.include?(x)
+    if TEST_Q1_Y.include?(y)
+      1
+    else
+      4
+    end
+  else
+    if TEST_Q1_Y.include?(y)
+      2
+    else
+      3
+    end
+  end
+end
+
+def compute_quadrant_real(pos)
+  x, y = pos
+  if REAL_Q1_X.include?(x)
+    if REAL_Q1_Y.include?(y)
+      1
+    else
+      4
+    end
+  else
+    if REAL_Q1_Y.include?(y)
+      2
+    else
+      3
+    end
+  end
+end
+
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     assert_equal(
@@ -50,6 +114,12 @@ Class.new(Minitest::Test) do
       ],
       parse_input(test_data),
     )
+  end
+
+  define_method :test_compute_quadrant do
+    assert_equal(1, compute_quadrant_test([0,0]))
+    assert_nil(compute_quadrant_test([5,0]))
+    assert_nil(compute_quadrant_test([0,3]))
   end
 end
 
