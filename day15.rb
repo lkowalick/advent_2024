@@ -78,6 +78,11 @@ def parse_input(text)
   { map: ,pos: , moves: , height:, width: }
 end
 
+def perform_moves(parsed_input)
+  parsed_input => { map: ,pos: , moves: , height:, width: }
+  map
+end
+
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     assert_equal(
@@ -99,6 +104,22 @@ Class.new(Minitest::Test) do
       },
       parse_input(test_data_1),
     )
+  end
+
+  define_method :test_perform_moves do
+   assert_equal(
+     [
+       %w(# # # # # # # #),
+       %w(# . . . . O O #),
+       %w(# # . . . . . #),
+       %w(# . . . . . O #),
+       %w(# . # O . . . #),
+       %w(# . . . O . . #),
+       %w(# . . . O . . #),
+       %w(# # # # # # # #),
+     ]
+     perform_moves(parse_input(test_data_1)),
+   )
   end
 end
 
