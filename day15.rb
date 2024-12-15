@@ -181,7 +181,7 @@ Class.new(Minitest::Test) do
   define_method :test_perform_moves_test_data_1 do
     instance = Robot.new(test_data_1)
     instance.perform_moves
-    expected = <<~TEST
+    expected = <<~TEST.chomp
       ########
       #....OO#
       ##.....#
@@ -192,12 +192,12 @@ Class.new(Minitest::Test) do
       ########
       TEST
 
-    assert_equal( expected.chomp, instance.render)
+    assert_equal(expected, instance.render)
   end
   define_method :test_perform_moves_test_data_1 do
     instance = Robot.new(test_data_2)
     instance.perform_moves
-    expected = <<~TEST
+    expected = <<~TEST.chomp
       ##########
       #.O.O.OOO#
       #........#
@@ -209,7 +209,7 @@ Class.new(Minitest::Test) do
       #OO....OO#
       ##########
       TEST
-    assert_equal(expected.chomp, instance.render)
+    assert_equal(expected, instance.render)
   end
 
   define_method :test_compute_gps_sum_1 do
@@ -314,7 +314,7 @@ end
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     instance = Robot2.new(test_data_3)
-    expected = <<~TEST
+    expected = <<~TEST.chomp
         ##############
         ##......##..##
         ##..........##
@@ -323,7 +323,6 @@ Class.new(Minitest::Test) do
         ##..........##
         ##############
         TEST
-    expected.chomp!
     assert_equal(expected, instance.render)
     assert_equal([3,10], instance.pos)
     assert_equal(7, instance.height)
