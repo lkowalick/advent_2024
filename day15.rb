@@ -152,7 +152,7 @@ Class.new(Minitest::Test) do
     assert(instance.can_perform?(DN, instance.pos))
   end
 
-  define_method :test_perform_moves do
+  define_method :test_perform_moves_test_data_1 do
     instance = Robot.new(test_data_1)
     instance.perform_moves
     expected= [ %w(# # # # # # # #),
@@ -170,6 +170,26 @@ Class.new(Minitest::Test) do
       instance.map,
       "EXPECTED:\n#{expected.map { |l| l.join("") }.join("\n")}\n
       GOT:\n#{instance.map.map { |l| l.join("") }.join("\n")}"
+    )
+  end
+  define_method :test_perform_moves_test_data_1 do
+    instance = Robot.new(test_data_2)
+    instance.perform_moves
+    expected = <<~TEST
+      ##########
+      #.O.O.OOO#
+      #........#
+      #OO......#
+      #OO......#
+      #O#.....O#
+      #O.....OO#
+      #O.....OO#
+      #OO....OO#
+      ##########
+      TEST
+    assert_equal(
+      expected.chomp,
+      instance.map.map { |l| l.join("") }.join("\n")
     )
   end
 end
