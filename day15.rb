@@ -57,81 +57,18 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
 TEST
 
-class Robot2
-  attr_accessor :map, :pos, :moves, :height, :width
-  def initialize(text_input)
-    map_text, move_text = text_input.split("\n\n")
-    self.pos = [nil, nil]
-    self.map = map_text.each_line.with_index.map do |line, i|
-      line.chomp.each_char.with_index.map do |char, j|
-        if char == ROB
-          self.pos = [i, j]
-          [EMP, EMP]
-        elsif char == EMP
-          [EMP, EMP]
-        else
-          ["[","]"]
-        end
-      end
-    end
-    self.height = map.length
-    self.width = map.first.length
-    self.moves = move_text.each_char.filter do |char|
-      MOVEMENT.include?(char)
-    end
-  end
+test_data_3 = <<-TEST
+#######
+#...#.#
+#.....#
+#..OO@#
+#..O..#
+#.....#
+#######
 
-  def perform_moves
-    moves.each do |move|
-      if can_perform?(move, pos)
-        self.pos = perform(move, pos)
-      end
-    end
-  end
+<vv<<^^<<^^
+TEST
 
-  def can_perform?(move, pos)
-    new_pos = neighbor(move, pos)
-    new_square = map.dig(*new_pos)
-    case new_square
-    when EMP
-      true
-    when WAL
-      false
-    when BOX
-      can_perform?(move, new_pos)
-    end
-  end
-
-  def perform(move, position)
-    new_pos = neighbor(move, position)
-    new_square = map.dig(*new_pos)
-    perform(move, new_pos) if new_square == BOX
-    self.map[position[0]][position[1]], self.map[new_pos[0]][new_pos[1]] = map.dig(*new_pos), map.dig(*position)
-    new_pos
-  end
-
-  def neighbor(move, position)
-    case move
-    when UP
-      [position[0]-1,position[1]]
-    when DN
-      [position[0]+1,position[1]]
-    when LT
-      [position[0],position[1]-1]
-    when RT
-      [position[0],position[1]+1]
-    end
-  end
-
-  def compute_gps_sum
-    map.each_with_index.sum do |row, i|
-      row.each_with_index.sum do |chr, j|
-        next(0) unless chr == BOX
-        100*i + j
-      end
-    end
-  end
-end
 
 class Robot
   attr_accessor :map, :pos, :moves, :height, :width
@@ -205,6 +142,10 @@ class Robot
       end
     end
   end
+
+  def render
+    self.map.map { |l| l.join("") }.join("\n")
+  end
 end
 
 
@@ -240,22 +181,18 @@ Class.new(Minitest::Test) do
   define_method :test_perform_moves_test_data_1 do
     instance = Robot.new(test_data_1)
     instance.perform_moves
-    expected= [ %w(# # # # # # # #),
-                %w(# . . . . O O #),
-                %w(# # . . . . . #),
-                %w(# . . . . . O #),
-                %w(# . # O . . . #),
-                %w(# . . . O . . #),
-                %w(# . . . O . . #),
-                %w(# # # # # # # #),
-    ]
+    expected = <<~TEST
+      ########
+      #....OO#
+      ##.....#
+      #.....O#
+      #.#O...#
+      #...O..#
+      #...O..#
+      ########
+      TEST
 
-    assert_equal(
-      expected,
-      instance.map,
-      "EXPECTED:\n#{expected.map { |l| l.join("") }.join("\n")}\n
-      GOT:\n#{instance.map.map { |l| l.join("") }.join("\n")}"
-    )
+    assert_equal( expected.chomp, instance.render)
   end
   define_method :test_perform_moves_test_data_1 do
     instance = Robot.new(test_data_2)
@@ -272,10 +209,7 @@ Class.new(Minitest::Test) do
       #OO....OO#
       ##########
       TEST
-    assert_equal(
-      expected.chomp,
-      instance.map.map { |l| l.join("") }.join("\n")
-    )
+    assert_equal(expected.chomp, instance.render)
   end
 
   define_method :test_compute_gps_sum_1 do
@@ -294,5 +228,105 @@ Class.new(Minitest::Test) do
     instance = Robot.new(real_input)
     instance.perform_moves
     assert_equal(1563092, instance.compute_gps_sum)
+  end
+end
+
+class Robot2
+  attr_accessor :map, :pos, :moves, :height, :width
+  def initialize(text_input)
+    map_text, move_text = text_input.split("\n\n")
+    self.pos = [nil, nil]
+    self.map = map_text.each_line.with_index.map do |line, i|
+      line.chomp.each_char.with_index.flat_map do |char, j|
+        if char == ROB
+          self.pos = [i, 2*j]
+          [EMP, EMP]
+        elsif char == BOX
+          ["[","]"]
+        else
+          [char,char]
+        end
+      end
+    end
+    self.height = map.length
+    self.width = map.first.length
+    self.moves = move_text.each_char.filter do |char|
+      MOVEMENT.include?(char)
+    end
+  end
+
+  def render
+    self.map.map { |l| l.join("") }.join("\n")
+  end
+
+  def perform_moves
+    moves.each do |move|
+      if can_perform?(move, pos)
+        self.pos = perform(move, pos)
+      end
+    end
+  end
+
+  def can_perform?(move, pos)
+    new_pos = neighbor(move, pos)
+    new_square = map.dig(*new_pos)
+    case new_square
+    when EMP
+      true
+    when WAL
+      false
+    when BOX
+      can_perform?(move, new_pos)
+    end
+  end
+
+  def perform(move, position)
+    new_pos = neighbor(move, position)
+    new_square = map.dig(*new_pos)
+    perform(move, new_pos) if new_square == BOX
+    self.map[position[0]][position[1]], self.map[new_pos[0]][new_pos[1]] = map.dig(*new_pos), map.dig(*position)
+    new_pos
+  end
+
+  def neighbor(move, position)
+    case move
+    when UP
+      [position[0]-1,position[1]]
+    when DN
+      [position[0]+1,position[1]]
+    when LT
+      [position[0],position[1]-1]
+    when RT
+      [position[0],position[1]+1]
+    end
+  end
+
+  def compute_gps_sum
+    map.each_with_index.sum do |row, i|
+      row.each_with_index.sum do |chr, j|
+        next(0) unless chr == BOX
+        100*i + j
+      end
+    end
+  end
+end
+
+Class.new(Minitest::Test) do
+  define_method :test_parse_input do
+    instance = Robot2.new(test_data_3)
+    expected = <<~TEST
+        ##############
+        ##......##..##
+        ##..........##
+        ##....[][]..##
+        ##....[]....##
+        ##..........##
+        ##############
+        TEST
+    expected.chomp!
+    assert_equal(expected, instance.render)
+    assert_equal([3,10], instance.pos)
+    assert_equal(7, instance.height)
+    assert_equal(14, instance.width)
   end
 end
