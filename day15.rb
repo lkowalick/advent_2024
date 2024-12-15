@@ -80,7 +80,41 @@ class Robot
   end
 
   def perform_moves
-    map
+    moves.each do |move|
+      self.pos = perform(move, pos) if can_perform?(move, pos)
+    end
+  end
+
+  def can_perform?(move, pos)
+    new_pos = neighbor(move, pos)
+    new_square = map.dig(*new_pos)
+    case new_square
+    when EMP
+      true
+    when WAL
+      false
+    when BOX
+      can_perform?(move, new_pos)
+    end
+  end
+
+  def perform(move, pos)
+    current_square = map.dig(*pos)
+    new_pos = neighbor(move, pos)
+    new_square = map.dig(*new_pos)
+    case new_square
+    when EMP
+      map[pos[0]][pos[1]] = new_square
+      map[new_pos[0]][new_pos[1]] = current_square
+    when BOX
+      perform(move, new_pos)
+    else
+      raise "unexpected wall at #{new_pos.inspect}"
+    end
+    new_pos
+  end
+
+  def neighbor(move)
   end
 end
 
