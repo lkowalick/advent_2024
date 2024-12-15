@@ -57,69 +57,70 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
 TEST
 
-def parse_input(text)
-  map_text, move_text = text.split("\n\n")
-  pos = [nil, nil]
-  map = map_text.each_line.with_index.map do |line, i|
-    line.chomp.each_char.with_index.map do |char, j|
-      if char == ROB
-        pos = [i, j]
-        EMP
-      else
-        char
+class Robot
+  attr_accessor :map, :pos, :moves, :height, :width
+  def initialize(text_input)
+    map_text, move_text = text_input.split("\n\n")
+    self.pos = [nil, nil]
+    self.map = map_text.each_line.with_index.map do |line, i|
+      line.chomp.each_char.with_index.map do |char, j|
+        if char == ROB
+          self.pos = [i, j]
+          EMP
+        else
+          char
+        end
       end
     end
+    self.height = map.length
+    self.width = map.first.length
+    self.moves = move_text.each_char.filter do |char|
+      MOVEMENT.include?(char)
+    end
   end
-  height = map.length
-  width = map.first.length
-  moves = move_text.each_char.filter do |char|
-    MOVEMENT.include?(char)
-  end
-  { map: ,pos: , moves: , height:, width: }
-end
 
-def perform_moves(parsed_input)
-  parsed_input => { map: ,pos: , moves: , height:, width: }
-  map
+  def perform_moves
+    map
+  end
 end
 
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
+    instance = Robot.new(test_data_1)
     assert_equal(
-      {
-        map: [
-          [WAL, WAL, WAL, WAL, WAL, WAL, WAL, WAL],
-          [WAL, EMP, EMP, BOX, EMP, BOX, EMP, WAL],
-          [WAL, WAL, EMP, EMP, BOX, EMP, EMP, WAL],
-          [WAL, EMP, EMP, EMP, BOX, EMP, EMP, WAL],
-          [WAL, EMP, WAL, EMP, BOX, EMP, EMP, WAL],
-          [WAL, EMP, EMP, EMP, BOX, EMP, EMP, WAL],
-          [WAL, EMP, EMP, EMP, EMP, EMP, EMP, WAL],
-          [WAL, WAL, WAL, WAL, WAL, WAL, WAL, WAL],
-        ],
-        pos: [2,2],
-        moves: [LT, UP, UP, RT, RT, RT, DN, DN, LT, DN, RT, RT, DN, LT, LT],
-        height: 8,
-        width: 8,
-      },
-      parse_input(test_data_1),
+      [
+        [WAL, WAL, WAL, WAL, WAL, WAL, WAL, WAL],
+        [WAL, EMP, EMP, BOX, EMP, BOX, EMP, WAL],
+        [WAL, WAL, EMP, EMP, BOX, EMP, EMP, WAL],
+        [WAL, EMP, EMP, EMP, BOX, EMP, EMP, WAL],
+        [WAL, EMP, WAL, EMP, BOX, EMP, EMP, WAL],
+        [WAL, EMP, EMP, EMP, BOX, EMP, EMP, WAL],
+        [WAL, EMP, EMP, EMP, EMP, EMP, EMP, WAL],
+        [WAL, WAL, WAL, WAL, WAL, WAL, WAL, WAL],
+      ],
+      instance.map
     )
+    assert_equal([2,2], instance.pos)
+    assert_equal(8, instance.height)
+    assert_equal(8, instance.width)
   end
 
   define_method :test_perform_moves do
-   assert_equal(
-     [
-       %w(# # # # # # # #),
-       %w(# . . . . O O #),
-       %w(# # . . . . . #),
-       %w(# . . . . . O #),
-       %w(# . # O . . . #),
-       %w(# . . . O . . #),
-       %w(# . . . O . . #),
-       %w(# # # # # # # #),
-     ]
-     perform_moves(parse_input(test_data_1)),
-   )
+    instance = Robot.new(test_data_1)
+    instance.perform_moves
+    assert_equal(
+      [
+        %w(# # # # # # # #),
+        %w(# . . . . O O #),
+        %w(# # . . . . . #),
+        %w(# . . . . . O #),
+        %w(# . # O . . . #),
+        %w(# . . . O . . #),
+        %w(# . . . O . . #),
+        %w(# # # # # # # #),
+      ],
+      instance.map,
+    )
   end
 end
 
