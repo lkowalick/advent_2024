@@ -202,13 +202,21 @@ Class.new(Minitest::Test) do
     )
   end
 
-  define_method :test_compute_gps_sum do
-    instance1 = Robot.new(test_data_1)
-    instance1.perform_moves
-    assert_equal(2028, instance1.compute_gps_sum)
-    instance2 = Robot.new(test_data_2)
-    instance2.perform_moves
-    assert_equal(10_092, instance2.compute_gps_sum)
+  define_method :test_compute_gps_sum_1 do
+    instance = Robot.new(test_data_1)
+    instance.perform_moves
+    assert_equal(2028, instance.compute_gps_sum)
+  end
+
+  define_method :test_compute_gps_sum_2 do
+    instance = Robot.new(test_data_2)
+    instance.perform_moves
+    assert_equal(10_092, instance.compute_gps_sum)
+  end
+
+  define_method :test_compute_gps_sum_real do
+    instance = Robot.new(real_input)
+    instance.perform_moves
+    assert_equal(1563092, instance.compute_gps_sum)
   end
 end
-
