@@ -58,10 +58,22 @@ v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
 TEST
 
 def parse_input(text)
-  text.each_line.map do |line|
-    x, y, dx, dy = line.scan(/-?\d+/).map(&:to_i)
-    { x:, y:, dx:, dy: }
+  map_text, move_text = text.split("\n\n")
+  pos = [nil, nil]
+  map = map_text.each_line.with_index.map do |line, i|
+    line.chomp.each_char.with_index.map do |char, j|
+      if char == ROB
+        pos = [i, j]
+        EMP
+      else
+        char
+      end
+    end
   end
+  moves = move_text.each_char.filter do |char|
+    MOVEMENT.include?(char)
+  end
+  { map: ,pos: , moves: }
 end
 
 Class.new(Minitest::Test) do
