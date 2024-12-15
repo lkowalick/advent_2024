@@ -120,6 +120,15 @@ class Robot
       [position[0],position[1]+1]
     end
   end
+
+  def compute_gps_sum
+    map.each_with_index.sum do |row, i|
+      row.each_with_index.sum do |chr, j|
+        next(0) unless chr == BOX
+        100*i + j
+      end
+    end
+  end
 end
 
 
@@ -191,6 +200,15 @@ Class.new(Minitest::Test) do
       expected.chomp,
       instance.map.map { |l| l.join("") }.join("\n")
     )
+  end
+
+  define_method :test_compute_gps_sum do
+    instance1 = Robot.new(test_data_1)
+    instance1.perform_moves
+    assert_equal(2028, instance1.compute_gps_sum)
+    instance2 = Robot.new(test_data_2)
+    instance2.perform_moves
+    assert_equal(10_092, instance2.compute_gps_sum)
   end
 end
 
