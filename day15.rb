@@ -148,7 +148,6 @@ class Robot
   end
 end
 
-
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     instance = Robot.new(test_data_1)
@@ -327,5 +326,20 @@ Class.new(Minitest::Test) do
     assert_equal([3,10], instance.pos)
     assert_equal(7, instance.height)
     assert_equal(14, instance.width)
+  end
+
+  define_method :test_perform_moves do
+    instance = Robot2.new(test_data_3)
+    expected = <<~TEST.chomp
+        ##############
+        ##...[].##..##
+        ##.....[]...##
+        ##....[]....##
+        ##..........##
+        ##..........##
+        ##############
+        TEST
+    instance.perform_moves
+    assert_equal(expected, instance.render)
   end
 end
