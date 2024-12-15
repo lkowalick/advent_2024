@@ -57,6 +57,82 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
 TEST
 
+class Robot2
+  attr_accessor :map, :pos, :moves, :height, :width
+  def initialize(text_input)
+    map_text, move_text = text_input.split("\n\n")
+    self.pos = [nil, nil]
+    self.map = map_text.each_line.with_index.map do |line, i|
+      line.chomp.each_char.with_index.map do |char, j|
+        if char == ROB
+          self.pos = [i, j]
+          [EMP, EMP]
+        elsif char == EMP
+          [EMP, EMP]
+        else
+          ["[","]"]
+        end
+      end
+    end
+    self.height = map.length
+    self.width = map.first.length
+    self.moves = move_text.each_char.filter do |char|
+      MOVEMENT.include?(char)
+    end
+  end
+
+  def perform_moves
+    moves.each do |move|
+      if can_perform?(move, pos)
+        self.pos = perform(move, pos)
+      end
+    end
+  end
+
+  def can_perform?(move, pos)
+    new_pos = neighbor(move, pos)
+    new_square = map.dig(*new_pos)
+    case new_square
+    when EMP
+      true
+    when WAL
+      false
+    when BOX
+      can_perform?(move, new_pos)
+    end
+  end
+
+  def perform(move, position)
+    new_pos = neighbor(move, position)
+    new_square = map.dig(*new_pos)
+    perform(move, new_pos) if new_square == BOX
+    self.map[position[0]][position[1]], self.map[new_pos[0]][new_pos[1]] = map.dig(*new_pos), map.dig(*position)
+    new_pos
+  end
+
+  def neighbor(move, position)
+    case move
+    when UP
+      [position[0]-1,position[1]]
+    when DN
+      [position[0]+1,position[1]]
+    when LT
+      [position[0],position[1]-1]
+    when RT
+      [position[0],position[1]+1]
+    end
+  end
+
+  def compute_gps_sum
+    map.each_with_index.sum do |row, i|
+      row.each_with_index.sum do |chr, j|
+        next(0) unless chr == BOX
+        100*i + j
+      end
+    end
+  end
+end
+
 class Robot
   attr_accessor :map, :pos, :moves, :height, :width
   def initialize(text_input)
