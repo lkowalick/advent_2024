@@ -70,10 +70,12 @@ def parse_input(text)
       end
     end
   end
+  height = map.length
+  width = map.first.length
   moves = move_text.each_char.filter do |char|
     MOVEMENT.include?(char)
   end
-  { map: ,pos: , moves: }
+  { map: ,pos: , moves: , height:, width: }
 end
 
 Class.new(Minitest::Test) do
@@ -92,6 +94,8 @@ Class.new(Minitest::Test) do
         ],
         pos: [2,2],
         moves: [LT, UP, UP, RT, RT, RT, DN, DN, LT, DN, RT, RT, DN, LT, LT],
+        height: 8,
+        width: 8,
       },
       parse_input(test_data_1),
     )
