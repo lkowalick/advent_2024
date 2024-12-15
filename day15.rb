@@ -104,8 +104,8 @@ class Robot
     new_square = map.dig(*new_pos)
     case new_square
     when EMP
-      map[pos[0]][pos[1]] = new_square
-      map[new_pos[0]][new_pos[1]] = current_square
+      self.map[pos[0]][pos[1]] = new_square
+      self.map[new_pos[0]][new_pos[1]] = current_square
     when BOX
       perform(move, new_pos)
     else
@@ -114,7 +114,17 @@ class Robot
     new_pos
   end
 
-  def neighbor(move)
+  def neighbor(move, pos)
+    case move
+    when UP
+      [pos[0]-1,pos[1]]
+    when DN
+      [pos[0]+1,pos[1]]
+    when LT
+      [pos[0],pos[1]-1]
+    when RT
+      [pos[0],pos[1]+1]
+    end
   end
 end
 
