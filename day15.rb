@@ -6,19 +6,6 @@ FILENAME = "./day15_input.txt"
 
 real_input = File.read(FILENAME)
 
-MAP_CHARS = [
-  ROB = "@",
-  BOX = "O",
-  WAL = "#",
-  EMP = ".",
-]
-
-MOVEMENT = [
-  UP = "^",
-  DN = "v",
-  LT = "<",
-  RT = ">",
-]
 
 test_data_1 = <<-TEST
 ########
@@ -71,6 +58,19 @@ TEST
 
 
 class Robot
+  MAP_CHARS = [
+    ROB = "@",
+    BOX = "O",
+    WAL = "#",
+    EMP = ".",
+  ]
+
+  MOVEMENT = [
+    UP = "^",
+    DN = "v",
+    LT = "<",
+    RT = ">",
+  ]
   attr_accessor :map, :pos, :moves, :height, :width
   def initialize(text_input)
     map_text, move_text = text_input.split("\n\n")
@@ -152,17 +152,17 @@ Class.new(Minitest::Test) do
   define_method :test_parse_input do
     instance = Robot.new(test_data_1)
     assert_equal(
-      [
-        [WAL, WAL, WAL, WAL, WAL, WAL, WAL, WAL],
-        [WAL, EMP, EMP, BOX, EMP, BOX, EMP, WAL],
-        [WAL, WAL, EMP, EMP, BOX, EMP, EMP, WAL],
-        [WAL, EMP, EMP, EMP, BOX, EMP, EMP, WAL],
-        [WAL, EMP, WAL, EMP, BOX, EMP, EMP, WAL],
-        [WAL, EMP, EMP, EMP, BOX, EMP, EMP, WAL],
-        [WAL, EMP, EMP, EMP, EMP, EMP, EMP, WAL],
-        [WAL, WAL, WAL, WAL, WAL, WAL, WAL, WAL],
-      ],
-      instance.map
+      <<~TEST.chomp,
+      ########
+      #..O.O.#
+      ##..O..#
+      #...O..#
+      #.#.O..#
+      #...O..#
+      #......#
+      ########
+      TEST
+      instance.render
     )
     assert_equal([2,2], instance.pos)
     assert_equal(8, instance.height)
@@ -171,10 +171,10 @@ Class.new(Minitest::Test) do
 
   define_method :test_can_perform do
     instance = Robot.new(test_data_1)
-    refute(instance.can_perform?(LT, instance.pos))
-    assert(instance.can_perform?(RT, instance.pos))
-    assert(instance.can_perform?(UP, instance.pos))
-    assert(instance.can_perform?(DN, instance.pos))
+    refute(instance.can_perform?("<", instance.pos))
+    assert(instance.can_perform?(">", instance.pos))
+    assert(instance.can_perform?("^", instance.pos))
+    assert(instance.can_perform?("v", instance.pos))
   end
 
   define_method :test_perform_moves_test_data_1 do
@@ -231,6 +231,21 @@ Class.new(Minitest::Test) do
 end
 
 class Robot2
+  MAP_CHARS = [
+    ROB = "@",
+    BOX = "O",
+    BOX_L = "[",
+    BOX_R = "]",
+    WAL = "#",
+    EMP = ".",
+  ]
+
+  MOVEMENT = [
+    UP = "^",
+    DN = "v",
+    LT = "<",
+    RT = ">",
+  ]
   attr_accessor :map, :pos, :moves, :height, :width
   def initialize(text_input)
     map_text, move_text = text_input.split("\n\n")
@@ -274,7 +289,7 @@ class Robot2
       true
     when WAL
       false
-    when BOX
+    when BOX_L, BOX_R
       can_perform?(move, new_pos)
     end
   end
@@ -341,5 +356,10 @@ Class.new(Minitest::Test) do
         TEST
     instance.perform_moves
     assert_equal(expected, instance.render)
+  end
+
+  define_method :test_can_perform do
+    assert(Robot2.new("...OO....\n\n<").can_perform?(">", [0,5]))
+    refute(Robot2.new("...OO#...\n\n<").can_perform?(">", [0,5]))
   end
 end
