@@ -81,7 +81,9 @@ class Robot
 
   def perform_moves
     moves.each do |move|
-      self.pos = perform(move, pos) if can_perform?(move, pos)
+      if can_perform?(move, pos)
+        self.pos = perform(move, pos)
+      end
     end
   end
 
@@ -98,35 +100,28 @@ class Robot
     end
   end
 
-  def perform(move, pos)
-    current_square = map.dig(*pos)
-    new_pos = neighbor(move, pos)
+  def perform(move, position)
+    new_pos = neighbor(move, position)
     new_square = map.dig(*new_pos)
-    case new_square
-    when EMP
-      self.map[pos[0]][pos[1]] = new_square
-      self.map[new_pos[0]][new_pos[1]] = current_square
-    when BOX
-      perform(move, new_pos)
-    else
-      raise "unexpected wall at #{new_pos.inspect}"
-    end
+    perform(move, new_pos) if new_square == BOX
+    self.map[position[0]][position[1]], self.map[new_pos[0]][new_pos[1]] = map.dig(*new_pos), map.dig(*position)
     new_pos
   end
 
-  def neighbor(move, pos)
+  def neighbor(move, position)
     case move
     when UP
-      [pos[0]-1,pos[1]]
+      [position[0]-1,position[1]]
     when DN
-      [pos[0]+1,pos[1]]
+      [position[0]+1,position[1]]
     when LT
-      [pos[0],pos[1]-1]
+      [position[0],position[1]-1]
     when RT
-      [pos[0],pos[1]+1]
+      [position[0],position[1]+1]
     end
   end
 end
+
 
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
@@ -160,18 +155,21 @@ Class.new(Minitest::Test) do
   define_method :test_perform_moves do
     instance = Robot.new(test_data_1)
     instance.perform_moves
+    expected= [ %w(# # # # # # # #),
+                %w(# . . . . O O #),
+                %w(# # . . . . . #),
+                %w(# . . . . . O #),
+                %w(# . # O . . . #),
+                %w(# . . . O . . #),
+                %w(# . . . O . . #),
+                %w(# # # # # # # #),
+    ]
+
     assert_equal(
-      [
-        %w(# # # # # # # #),
-        %w(# . . . . O O #),
-        %w(# # . . . . . #),
-        %w(# . . . . . O #),
-        %w(# . # O . . . #),
-        %w(# . . . O . . #),
-        %w(# . . . O . . #),
-        %w(# # # # # # # #),
-      ],
+      expected,
       instance.map,
+      "EXPECTED:\n#{expected.map { |l| l.join("") }.join("\n")}\n
+      GOT:\n#{instance.map.map { |l| l.join("") }.join("\n")}"
     )
   end
 end
