@@ -149,6 +149,14 @@ Class.new(Minitest::Test) do
     assert_equal(8, instance.width)
   end
 
+  define_method :test_can_perform do
+    instance = Robot.new(test_data_1)
+    refute(instance.can_perform?(LT, instance.pos))
+    assert(instance.can_perform?(RT, instance.pos))
+    assert(instance.can_perform?(UP, instance.pos))
+    assert(instance.can_perform?(DN, instance.pos))
+  end
+
   define_method :test_perform_moves do
     instance = Robot.new(test_data_1)
     instance.perform_moves
