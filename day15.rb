@@ -601,13 +601,33 @@ Class.new(Minitest::Test) do
       warehouse.perform_move(move)
     end
     assert_equal(<<~TEST.chomp, warehouse.render)
-##############
-##...[].##..##
-##...@.[]...##
-##....[]....##
-##..........##
-##..........##
-##############
+        ##############
+        ##...[].##..##
+        ##...@.[]...##
+        ##....[]....##
+        ##..........##
+        ##..........##
+        ##############
         TEST
+  end
+
+  define_method :test_perform_moves2 do
+    parsed_input2 = parse_input(test_data_2)
+    warehouse = Warehouse.new(parsed_input2[:map])
+    parsed_input2[:moves].each do |move|
+      warehouse.perform_move(move)
+    end
+    assert_equal(<<~TEST.chomp, warehouse.render)
+      ####################
+      ##[].......[].[][]##
+      ##[]...........[].##
+      ##[]........[][][]##
+      ##[]......[]....[]##
+      ##..##......[]....##
+      ##..[]............##
+      ##..@......[].[][]##
+      ##......[][]..[]..##
+      ####################
+    TEST
   end
 end
