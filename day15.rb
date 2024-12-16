@@ -402,6 +402,10 @@ class Empty < WarehouseObject
   def to_s
     "."
   end
+
+  def move_coords(direction)
+    [[i,j]]
+  end
 end
 
 class Robot < WarehouseObject
@@ -455,26 +459,32 @@ class Warehouse
   end
 
   def move_object(direction, object)
-    raise "Cannot move #{object.class} at pos #{object.i},#{object.j}" unless object.movable?
-    new_coords = object.move_coords(directions)
+    new_coords = object.newly_occupied_spots(direction)
     move_at_coordinates(direction, new_coords)
     object.occupied_spots.each do |coord|
       i, j = coord
       self.objects[i][j] = Empty.new([i,j])
     end
-    object.i, object.j = new_coords.first
+    object.i, object.j = object.move_coords(direction).first
     object.occupied_spots.each do |i,j|
       self.objects[i][j] = object
     end
   end
 
   def move_at_coordinates(direction, coords)
-    objects_to_move = Set.new
+    objects_to_move = []
     coords.each do |coord|
-      objects_to_move << objects.dig(*coord)
+      objects_to_move <<  objects.dig(*coord) unless objects_to_move.include?(objects.dig(*coord))
     end
     objects_to_move.each do |object|
       move_object(direction, object)
+    end
+  end
+
+  def perform_move(direction)
+    coord = [robot.i, robot.j]
+    if can_move?(direction, coord)
+      move_at_coordinates(direction, [coord])
     end
   end
 end
@@ -498,7 +508,9 @@ def parse_input(text_input)
   { map:, moves: }
 end
 
+
 Class.new(Minitest::Test) do
+  parsed_input = parse_input(test_data_3)
   define_method :test_parse_input do
     expected = <<~TEST.chomp
         ##############
@@ -509,7 +521,77 @@ Class.new(Minitest::Test) do
         ##..........##
         ##############
         TEST
-    assert_equal(expected, Warehouse.new(parse_input(test_data_3)[:map]).render)
+    assert_equal(expected, Warehouse.new(parsed_input[:map]).render)
+  end
+
+  define_method :test_moving do
+    warehouse = Warehouse.new(parsed_input[:map])
+
+    warehouse.perform_move(parsed_input[:moves][0])
+    assert_equal(<<~TEST.chomp, warehouse.render)
+        ##############
+        ##......##..##
+        ##..........##
+        ##...[][]@..##
+        ##....[]....##
+        ##..........##
+        ##############
+        TEST
+
+    warehouse.perform_move(parsed_input[:moves][1])
+    assert_equal(<<~TEST.chomp, warehouse.render)
+        ##############
+        ##......##..##
+        ##..........##
+        ##...[][]...##
+        ##....[].@..##
+        ##..........##
+        ##############
+        TEST
+
+    warehouse.perform_move(parsed_input[:moves][2])
+    assert_equal(<<~TEST.chomp, warehouse.render)
+        ##############
+        ##......##..##
+        ##..........##
+        ##...[][]...##
+        ##....[]....##
+        ##.......@..##
+        ##############
+        TEST
+
+    warehouse.perform_move(parsed_input[:moves][3])
+    assert_equal(<<~TEST.chomp, warehouse.render)
+        ##############
+        ##......##..##
+        ##..........##
+        ##...[][]...##
+        ##....[]....##
+        ##......@...##
+        ##############
+        TEST
+
+    warehouse.perform_move(parsed_input[:moves][4])
+    assert_equal(<<~TEST.chomp, warehouse.render)
+        ##############
+        ##......##..##
+        ##..........##
+        ##...[][]...##
+        ##....[]....##
+        ##.....@....##
+        ##############
+        TEST
+
+    warehouse.perform_move(parsed_input[:moves][5])
+    assert_equal(<<~TEST.chomp, warehouse.render)
+        ##############
+        ##......##..##
+        ##...[][]...##
+        ##....[]....##
+        ##.....@....##
+        ##..........##
+        ##############
+        TEST
   end
 
 #  define_method :test_perform_moves do
