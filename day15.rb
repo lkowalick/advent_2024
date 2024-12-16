@@ -342,11 +342,14 @@ class Warehouse
     end.join("\n")
   end
 
-  def can_move?(direction, pos)
-    object = objects.dig(*pos)
+  def can_move_object_at_coordinate?(direction, pos)
+    can_move_object?(direction, objects.dig(*pos))
+  end
+
+  def can_move_object?(direction, object)
     return false unless object.movable?
     object.newly_occupied_spots(direction).all? do |coord|
-      can_move?(direction, coord)
+      can_move_object_at_coordinate?(direction, coord)
     end
   end
 
@@ -374,9 +377,8 @@ class Warehouse
   end
 
   def perform_move(direction)
-    coord = [robot.i, robot.j]
-    if can_move?(direction, coord)
-      move_at_coordinates(direction, [coord])
+    if can_move_object?(direction, robot)
+      move_object(direction, robot)
     end
   end
 
