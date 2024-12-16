@@ -487,6 +487,15 @@ class Warehouse
       move_at_coordinates(direction, [coord])
     end
   end
+
+  def compute_gps_sum
+    objects.each_with_index.sum do |row, i|
+      row.each_with_index.sum do |obj, j|
+        next(0) unless obj.class == Box && obj.i == i && obj.j == j
+        100*i + j
+      end
+    end
+  end
 end
 
 def parse_input(text_input)
@@ -508,6 +517,14 @@ def parse_input(text_input)
   { map:, moves: }
 end
 
+def compute_gps_sum_part2(text_input)
+  parsed_input = parse_input(text_input)
+  warehouse = Warehouse.new(parsed_input[:map])
+  parsed_input[:moves].each do |move|
+    warehouse.perform_move(move)
+  end
+  warehouse.compute_gps_sum
+end
 
 Class.new(Minitest::Test) do
   parsed_input = parse_input(test_data_3)
@@ -629,5 +646,9 @@ Class.new(Minitest::Test) do
       ##......[][]..[]..##
       ####################
     TEST
+  end
+
+  define_method :test_compute_gps_sum_part2 do
+    assert_equal(9021, compute_gps_sum_part2(test_data_2))
   end
 end
