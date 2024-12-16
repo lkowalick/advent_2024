@@ -650,5 +650,6 @@ Class.new(Minitest::Test) do
 
   define_method :test_compute_gps_sum_part2 do
     assert_equal(9021, compute_gps_sum_part2(test_data_2))
+    assert_equal(1582688, compute_gps_sum_part2(real_input))
   end
 end
