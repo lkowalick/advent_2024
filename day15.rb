@@ -275,13 +275,13 @@ class Robot2
 
   def perform_moves
     moves.each do |move|
-      if can_perform?(move, pos)
+      if robot_can_perform?(move, pos)
         self.pos = perform(move, pos)
       end
     end
   end
 
-  def can_perform?(move, pos)
+  def robot_can_perform?(move, pos)
     new_pos = neighbor(move, pos)
     new_square = map.dig(*new_pos)
     case new_square
@@ -289,7 +289,23 @@ class Robot2
       true
     when WAL
       false
-    when BOX_L, BOX_R
+    else
+    end
+
+
+  end
+
+  def can_perform_box?(move, pos)
+
+  end
+
+  def can_perform_helper(move, pos)
+    new_pos = neighbor(move, pos)
+    new_square = map.dig(*new_pos)
+    case new_square
+    when BOX_L
+      can_perform?(move, new_pos)
+    when BOX_R
       can_perform?(move, new_pos)
     end
   end
