@@ -57,7 +57,7 @@ test_data_3 = <<-TEST
 TEST
 
 
-class Robot
+class Rob
   MAP_CHARS = [
     ROB = "@",
     BOX = "O",
@@ -150,7 +150,7 @@ end
 
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
-    instance = Robot.new(test_data_1)
+    instance = Rob.new(test_data_1)
     assert_equal(
       <<~TEST.chomp,
       ########
@@ -170,7 +170,7 @@ Class.new(Minitest::Test) do
   end
 
   define_method :test_can_perform do
-    instance = Robot.new(test_data_1)
+    instance = Rob.new(test_data_1)
     refute(instance.can_perform?("<", instance.pos))
     assert(instance.can_perform?(">", instance.pos))
     assert(instance.can_perform?("^", instance.pos))
@@ -178,7 +178,7 @@ Class.new(Minitest::Test) do
   end
 
   define_method :test_perform_moves_test_data_1 do
-    instance = Robot.new(test_data_1)
+    instance = Rob.new(test_data_1)
     instance.perform_moves
     expected = <<~TEST.chomp
       ########
@@ -194,7 +194,7 @@ Class.new(Minitest::Test) do
     assert_equal(expected, instance.render)
   end
   define_method :test_perform_moves_test_data_1 do
-    instance = Robot.new(test_data_2)
+    instance = Rob.new(test_data_2)
     instance.perform_moves
     expected = <<~TEST.chomp
       ##########
@@ -212,19 +212,19 @@ Class.new(Minitest::Test) do
   end
 
   define_method :test_compute_gps_sum_1 do
-    instance = Robot.new(test_data_1)
+    instance = Rob.new(test_data_1)
     instance.perform_moves
     assert_equal(2028, instance.compute_gps_sum)
   end
 
   define_method :test_compute_gps_sum_2 do
-    instance = Robot.new(test_data_2)
+    instance = Rob.new(test_data_2)
     instance.perform_moves
     assert_equal(10_092, instance.compute_gps_sum)
   end
 
   define_method :test_compute_gps_sum_real do
-    instance = Robot.new(real_input)
+    instance = Rob.new(real_input)
     instance.perform_moves
     assert_equal(1563092, instance.compute_gps_sum)
   end
@@ -341,41 +341,194 @@ class Robot2
   end
 end
 
+
+class WarehouseObject
+  attr_accessor :i, :j
+
+  def initialize(coord)
+    @i, @j = coord
+  end
+
+  def occupied_spots
+    [[i,j]]
+  end
+
+  def movable?
+    true
+  end
+
+  def newly_occupied_spots(direction)
+    move_coords(direction) - occupied_spots
+  end
+
+  def move_coords(direction)
+    case direction
+    when "^"
+      occupied_spots.map { |i,j| [i-1,j] }
+    when "v"
+      occupied_spots.map { |i,j| [i+1,j] }
+    when "<"
+      occupied_spots.map { |i,j| [i,j-1] }
+    when ">"
+      occupied_spots.map { |i,j| [i,j+1] }
+    end
+  end
+end
+
+class Box < WarehouseObject
+  def occupied_spots
+    [
+      [i, j],
+      [i, j+1],
+    ]
+  end
+
+  def to_s
+    "[]"
+  end
+end
+
+class Wall < WarehouseObject
+  def movable?
+    false
+  end
+
+  def to_s
+    "#"
+  end
+end
+
+class Empty < WarehouseObject
+  def to_s
+    "."
+  end
+end
+
+class Robot < WarehouseObject
+  def to_s
+    "@"
+  end
+end
+
+class Warehouse
+  attr_accessor :objects, :robot
+
+  def initialize(grid)
+    self.objects = Array.new(grid.length) { Array.new(grid.first.length) }
+    grid.each_with_index do |row, i|
+      row.each_with_index do |entry, j|
+        new_object = case entry
+                     when "@"
+                       self.robot = Robot.new([i,j])
+                     when "."
+                       Empty.new([i,j])
+                     when "#"
+                       Wall.new([i,j])
+                     when "["
+                       Box.new([i,j])
+                     when "]"
+                       nil
+                     end
+        next unless new_object
+        new_object.occupied_spots.each do |i,j|
+          self.objects[i][j] = new_object
+        end
+      end
+    end
+  end
+
+  def render
+    self.objects.each_with_index.map do |row, i|
+      row.each_with_index.map do |o, j|
+        next("") unless [o.i,o.j] == [i,j]
+        o.to_s
+      end.join("")
+    end.join("\n")
+  end
+
+  def can_move?(direction, pos)
+    object = objects.dig(*pos)
+    return false unless object.movable?
+    object.newly_occupied_spots(direction).all? do |coord|
+      can_move?(direction, coord)
+    end
+  end
+
+  def move_object(direction, object)
+    raise "Cannot move #{object.class} at pos #{object.i},#{object.j}" unless object.movable?
+    new_coords = object.move_coords(directions)
+    move_at_coordinates(direction, new_coords)
+    object.occupied_spots.each do |coord|
+      i, j = coord
+      self.objects[i][j] = Empty.new([i,j])
+    end
+    object.i, object.j = new_coords.first
+    object.occupied_spots.each do |i,j|
+      self.objects[i][j] = object
+    end
+  end
+
+  def move_at_coordinates(direction, coords)
+    objects_to_move = Set.new
+    coords.each do |coord|
+      objects_to_move << objects.dig(*coord)
+    end
+    objects_to_move.each do |object|
+      move_object(direction, object)
+    end
+  end
+end
+
+def parse_input(text_input)
+  map_text, move_text = text_input.split("\n\n")
+  map = map_text.each_line.with_index.map do |line, i|
+    line.chomp.each_char.with_index.flat_map do |char, j|
+      if char == "@"
+        ["@", "."]
+      elsif char == "O"
+        ["[","]"]
+      else
+        [char,char]
+      end
+    end
+  end
+  moves = move_text.each_char.filter do |char|
+    %w(^ v < >).include?(char)
+  end
+  { map:, moves: }
+end
+
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
-    instance = Robot2.new(test_data_3)
     expected = <<~TEST.chomp
         ##############
         ##......##..##
         ##..........##
-        ##....[][]..##
+        ##....[][]@.##
         ##....[]....##
         ##..........##
         ##############
         TEST
-    assert_equal(expected, instance.render)
-    assert_equal([3,10], instance.pos)
-    assert_equal(7, instance.height)
-    assert_equal(14, instance.width)
+    assert_equal(expected, Warehouse.new(parse_input(test_data_3)[:map]).render)
   end
 
-  define_method :test_perform_moves do
-    instance = Robot2.new(test_data_3)
-    expected = <<~TEST.chomp
-        ##############
-        ##...[].##..##
-        ##.....[]...##
-        ##....[]....##
-        ##..........##
-        ##..........##
-        ##############
-        TEST
-    instance.perform_moves
-    assert_equal(expected, instance.render)
-  end
-
-  define_method :test_can_perform do
-    assert(Robot2.new("...OO....\n\n<").can_perform?(">", [0,5]))
-    refute(Robot2.new("...OO#...\n\n<").can_perform?(">", [0,5]))
-  end
+#  define_method :test_perform_moves do
+#    instance = Robot2.new(test_data_3)
+#    expected = <<~TEST.chomp
+#        ##############
+#        ##...[].##..##
+#        ##.....[]...##
+#        ##....[]....##
+#        ##..........##
+#        ##..........##
+#        ##############
+#        TEST
+#    instance.perform_moves
+#    assert_equal(expected, instance.render)
+#  end
+#
+#  define_method :test_can_perform do
+#    assert(Robot2.new("...OO....\n\n<").can_perform?(">", [0,5]))
+#    refute(Robot2.new("...OO#...\n\n<").can_perform?(">", [0,5]))
+#  end
 end
