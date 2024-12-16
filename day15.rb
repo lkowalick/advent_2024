@@ -472,9 +472,9 @@ class Warehouse
   end
 
   def move_at_coordinates(direction, coords)
-    objects_to_move = []
+    objects_to_move = Set.new
     coords.each do |coord|
-      objects_to_move <<  objects.dig(*coord) unless objects_to_move.include?(objects.dig(*coord))
+      objects_to_move <<  objects.dig(*coord)
     end
     objects_to_move.each do |object|
       move_object(direction, object)
