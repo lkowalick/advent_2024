@@ -592,25 +592,22 @@ Class.new(Minitest::Test) do
         ##..........##
         ##############
         TEST
+
   end
 
-#  define_method :test_perform_moves do
-#    instance = Robot2.new(test_data_3)
-#    expected = <<~TEST.chomp
-#        ##############
-#        ##...[].##..##
-#        ##.....[]...##
-#        ##....[]....##
-#        ##..........##
-#        ##..........##
-#        ##############
-#        TEST
-#    instance.perform_moves
-#    assert_equal(expected, instance.render)
-#  end
-#
-#  define_method :test_can_perform do
-#    assert(Robot2.new("...OO....\n\n<").can_perform?(">", [0,5]))
-#    refute(Robot2.new("...OO#...\n\n<").can_perform?(">", [0,5]))
-#  end
+  define_method :test_perform_moves do
+    warehouse = Warehouse.new(parsed_input[:map])
+    parsed_input[:moves].each do |move|
+      warehouse.perform_move(move)
+    end
+    assert_equal(<<~TEST.chomp, warehouse.render)
+##############
+##...[].##..##
+##...@.[]...##
+##....[]....##
+##..........##
+##..........##
+##############
+        TEST
+  end
 end
