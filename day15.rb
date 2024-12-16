@@ -230,118 +230,6 @@ Class.new(Minitest::Test) do
   end
 end
 
-class Robot2
-  MAP_CHARS = [
-    ROB = "@",
-    BOX = "O",
-    BOX_L = "[",
-    BOX_R = "]",
-    WAL = "#",
-    EMP = ".",
-  ]
-
-  MOVEMENT = [
-    UP = "^",
-    DN = "v",
-    LT = "<",
-    RT = ">",
-  ]
-  attr_accessor :map, :pos, :moves, :height, :width
-  def initialize(text_input)
-    map_text, move_text = text_input.split("\n\n")
-    self.pos = [nil, nil]
-    self.map = map_text.each_line.with_index.map do |line, i|
-      line.chomp.each_char.with_index.flat_map do |char, j|
-        if char == ROB
-          self.pos = [i, 2*j]
-          [EMP, EMP]
-        elsif char == BOX
-          ["[","]"]
-        else
-          [char,char]
-        end
-      end
-    end
-    self.height = map.length
-    self.width = map.first.length
-    self.moves = move_text.each_char.filter do |char|
-      MOVEMENT.include?(char)
-    end
-  end
-
-  def render
-    self.map.map { |l| l.join("") }.join("\n")
-  end
-
-  def perform_moves
-    moves.each do |move|
-      if robot_can_perform?(move, pos)
-        self.pos = perform(move, pos)
-      end
-    end
-  end
-
-  def robot_can_perform?(move, pos)
-    new_pos = neighbor(move, pos)
-    new_square = map.dig(*new_pos)
-    case new_square
-    when EMP
-      true
-    when WAL
-      false
-    else
-    end
-
-
-  end
-
-  def can_perform_box?(move, pos)
-
-  end
-
-  def can_perform_helper(move, pos)
-    new_pos = neighbor(move, pos)
-    new_square = map.dig(*new_pos)
-    case new_square
-    when BOX_L
-      can_perform?(move, new_pos)
-    when BOX_R
-      can_perform?(move, new_pos)
-    end
-  end
-
-  def perform(move, position)
-    new_pos = neighbor(move, position)
-    new_square = map.dig(*new_pos)
-    perform(move, new_pos) if new_square == BOX
-    self.map[position[0]][position[1]], self.map[new_pos[0]][new_pos[1]] = map.dig(*new_pos), map.dig(*position)
-    new_pos
-  end
-
-  def neighbor(move, position)
-    case move
-    when UP
-      [position[0]-1,position[1]]
-    when DN
-      [position[0]+1,position[1]]
-    when LT
-      [position[0],position[1]-1]
-    when RT
-      [position[0],position[1]+1]
-    end
-  end
-
-  def compute_gps_sum
-    map.each_with_index.sum do |row, i|
-      row.each_with_index.sum do |chr, j|
-        next(0) unless chr == BOX
-        100*i + j
-      end
-    end
-  end
-end
-
-
 class WarehouseObject
   attr_accessor :i, :j
 
@@ -372,6 +260,10 @@ class WarehouseObject
     when ">"
       occupied_spots.map { |i,j| [i,j+1] }
     end
+  end
+
+  def move!(direction)
+    self.i, self.j = move_coords(direction).first
   end
 end
 
@@ -465,7 +357,7 @@ class Warehouse
       i, j = coord
       self.objects[i][j] = Empty.new([i,j])
     end
-    object.i, object.j = object.move_coords(direction).first
+    object.move!(direction)
     object.occupied_spots.each do |i,j|
       self.objects[i][j] = object
     end
