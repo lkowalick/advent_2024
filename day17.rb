@@ -129,7 +129,7 @@ Class.new(Minitest::Test) do
     )
     assert_equal(
       "2,1,3,0,5,2,3,7,1",
-      Machine.new(real_data).execute
+      Machine.new(real_data).execute.join(",")
     )
   end
 
