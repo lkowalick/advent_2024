@@ -46,43 +46,49 @@ TEST
 
 DIRECTIONS = %i(e s w n)
 
-class Maze
-  attr_accessor :pos, :finish, :maze, :facing
-
-  def initialize(text)
-    self.maze = text.each_line.with_index.map do |line, i|
-      line.chomp.each_char.with_index.map do |char, j|
-        case char
-        when "S"
-          self.pos = [i,j]
-          "."
-        when "E"
-          self.finish = [i,j]
-          "."
-        else
-          char
-        end
+def parse_input(text)
+  pos, finish = nil, nil
+  maze = text.each_line.with_index.map do |line, i|
+    line.chomp.each_char.with_index.map do |char, j|
+      case char
+      when "S"
+        pos = [i,j]
+        "."
+      when "E"
+        finish = [i,j]
+        "."
+      else
+        char
       end
     end
-    self.facing = :e
   end
-
-  def to_s
-    "position: #{pos.inspect} | finish: #{finish.inspect} | facing: #{facing}\n" + maze.map { |row| row.join("") }.join("\n")
-  end
+  facing = :e
+  visited = Set.new([pos])
+  { maze:, pos:, finish:, facing:, visited: }
 end
 
-def neighbors(grid, i, j)
+def solve(maze)
+
+end
+
+def to_string(maze)
+  maze => { pos: , maze:, finish:, facing: }
+  "position: #{pos.inspect} | finish: #{finish.inspect} | facing: #{facing}\n" + maze.map { |row| row.join("") }.join("\n")
+end
+
+def neighbors(maze)
+  maze => { pos: [i,j], maze:, visited: }
   [
     [i+1,j],[i-1,j],[i,j+1],[i,j-1],
   ].filter do |x,y|
-    0 <= x && x < grid.length && 0 <= y && y < grid.first.length
+    0 <= x && x < maze.length && 0 <= y && y < maze.first.length && maze[x][y] != "#" && !visited.include?([x,y])
   end
 end
 
+
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
-    assert_equal(<<~EXPECTED.chomp , Maze.new(test_data_1).to_s)
+    assert_equal(<<~EXPECTED.chomp , to_string(parse_input(test_data_1)))
       position: [13, 1] | finish: [1, 13] | facing: e
       ###############
       #.......#.....#
@@ -101,7 +107,7 @@ Class.new(Minitest::Test) do
       ###############
       EXPECTED
 
-    assert_equal(<<~EXPECTED.chomp , Maze.new(test_data_2).to_s)
+    assert_equal(<<~EXPECTED.chomp , to_string(parse_input(test_data_2)))
       position: [15, 1] | finish: [1, 15] | facing: e
       #################
       #...#...#...#...#
