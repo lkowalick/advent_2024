@@ -217,24 +217,65 @@ def dijkstra(input)
   ]
 end
 
+def dijkstra_backwards(input)
+  input => { pos:, maze: , facing:, finish:}
+  dist = {}
+  queue = Containers::MinHeap.new
+  seen = Set.new
+  dist[[pos,facing]] = Float::INFINITY
+  dist[[pos,(facing+1)%4]] = Float::INFINITY
+  dist[[pos,(facing+2)%4]] = Float::INFINITY
+  dist[[pos,(facing+3)%4]] = Float::INFINITY
+  get_reachable_vertices(input).each do |vertex|
+    if vertex.first == finish
+      dist[vertex] = 0
+    else
+      dist[vertex] = Float::INFINITY
+    end
+    queue.push(dist[vertex], vertex)
+  end
+
+  until queue.empty?
+    u = queue.pop
+    pos, dir = u
+    next if seen.include?(u)
+    seen << u
+
+    dij_neighbors(maze, *u).each do |neighbor|
+      neighbor_pos, neighbor_dir = neighbor
+      next if seen.include?(neighbor)
+      cost = if neighbor_dir == dir
+               1
+             else
+               1000
+             end
+      new_dist = dist.fetch(u) + cost
+       if new_dist < dist.fetch(neighbor)
+         dist[neighbor] = new_dist
+         queue.push(new_dist, neighbor)
+       end
+    end
+  end
+
+
+  [
+    dist[[input[:pos], 0]],
+    dist,
+  ]
+end
+
 def get_seats(input)
   input => { maze:, facing: , pos:}
   min, dist = dijkstra(input)
+  _, dist_backwards = dijkstra_backwards(input)
 
-
-  set = Set.new
-  solve_helper_good(maze, Set.new,[pos,facing] , dist, min).each_slice(3) do |i,j,k|
-    raise if i.nil? || j.nil? || k.nil?
-    set << [i,j]
-  end
-  puts ""
-  puts(maze.each_with_index.map do |row, i|
-    row.each_with_index.map do |char, j|
-      next("O") if set.include?([i,j])
-      char
-    end.join("")
-  end.join("\n"))
-  set.length
+  maze.each_with_index.each_with_object(Set.new) do |(row, i), set|
+    row.each_with_index do |char, j|
+      0.upto(3).each do |dir|
+        set << [i,j] if dist.fetch([[i,j],dir], Float::INFINITY) + dist_backwards.fetch([[i,j],dir],Float::INFINITY) == min
+      end
+    end
+  end.length
 end
 
 
@@ -317,11 +358,14 @@ Class.new(Minitest::Test) do
     #assert_equal(73404, dijkstra(parse_input(real_data)).first)
   end
 
+  define_method :test_backwards_dijkstra do
+    assert_equal(7036, dijkstra_backwards(parse_input(test_data_1)).first)
+    assert_equal(11048, dijkstra_backwards(parse_input(test_data_2)).first)
+  end
+
   define_method :test_get_seats do
-    #assert_equal(45, get_seats(parse_input(test_data_1)))
+    assert_equal(45, get_seats(parse_input(test_data_1)))
     assert_equal(64, get_seats(parse_input(test_data_2)))
+    assert_equal(449, get_seats(parse_input(real_data)))
   end
 end
-
-puts "part 2: #{get_seats(parse_input(real_data))}"
-
