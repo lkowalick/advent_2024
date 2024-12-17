@@ -33,6 +33,22 @@ class Machine
     program_output.join(",")
   end
 
+  def execute_with_short_circuit
+    states = Set.new([to_state])
+    while ip + 1 < instructions.length
+      execute_instruction(*instructions[ip,2])
+      return false if states.include?(to_state)
+      return false if program_output.length > instructions.length
+      return false if program_output.length > 0 && program_output.last != instructions[program_output.length-1]
+      states << to_state
+    end
+    program_output == instructions
+  end
+
+  def to_state
+    "#{a} #{b} #{c} #{ip}"
+  end
+
   def execute_instruction(ins, operand)
     case ins
     when ADV
@@ -100,6 +116,15 @@ Class.new(Minitest::Test) do
     assert_equal(
       "2,1,3,0,5,2,3,7,1",
       Machine.new(real_data).execute
+    )
+  end
+
+  define_method :test_execute_with_short_circuit do
+    assert(
+      Machine.new(Debugger.new(117440,0,0,[0,3,5,4,3,0])).execute_with_short_circuit
+    )
+    refute(
+      Machine.new(Debugger.new(20,0,0,[0,3,5,4,3,0])).execute_with_short_circuit
     )
   end
 end
