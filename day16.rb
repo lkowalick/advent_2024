@@ -79,9 +79,20 @@ def solve_helper(maze, path)
   nil
 end
 
-def to_string(maze)
+def maze_to_string(maze)
   maze => { pos: , maze:, facing: }
   "position: #{pos.inspect} | facing: #{facing}\n" + maze.map { |row| row.join("") }.join("\n")
+end
+
+def solution_to_string(maze)
+  solution = solve(maze)
+  maze => { pos: , maze:, facing: }
+  maze.each_with_index.map do |row, i|
+    row.each_with_index.map do |char, j|
+      next("@") if solution.include?([i,j])
+      char
+    end.join("")
+  end.join("\n")
 end
 
 def neighbors(maze, path)
@@ -96,7 +107,7 @@ end
 
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
-    assert_equal(<<~EXPECTED.chomp , to_string(parse_input(test_data_1)))
+    assert_equal(<<~EXPECTED.chomp , maze_to_string(parse_input(test_data_1)))
       position: [13, 1] | facing: e
       ###############
       #.......#....E#
@@ -115,7 +126,7 @@ Class.new(Minitest::Test) do
       ###############
       EXPECTED
 
-    assert_equal(<<~EXPECTED.chomp , to_string(parse_input(test_data_2)))
+    assert_equal(<<~EXPECTED.chomp , maze_to_string(parse_input(test_data_2)))
       position: [15, 1] | facing: e
       #################
       #...#...#...#..E#
@@ -138,4 +149,4 @@ Class.new(Minitest::Test) do
   end
 end
 
-puts "solution to test_data_1: #{solve((parse_input(test_data_2)))}"
+puts "solution to test_data_1: #{solution_to_string((parse_input(test_data_2)))}"
