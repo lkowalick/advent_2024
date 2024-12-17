@@ -97,5 +97,9 @@ Class.new(Minitest::Test) do
       "4,6,3,5,6,3,5,2,1,0",
       Machine.new(Debugger.new(729,0,0,[0,1,5,4,3,0])).execute
     )
+    assert_equal(
+      "2,1,3,0,5,2,3,7,1",
+      Machine.new(real_data).execute
+    )
   end
 end
