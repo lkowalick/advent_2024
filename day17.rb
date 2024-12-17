@@ -34,19 +34,15 @@ class Machine
   end
 
   def execute_with_short_circuit
-    states = Set.new([to_state])
     while ip + 1 < instructions.length
       execute_instruction(*instructions[ip,2])
-      return false if states.include?(to_state)
-      return false if program_output.length > instructions.length
-      return false if program_output.length > 0 && program_output.last != instructions[program_output.length-1]
-      states << to_state
     end
-    program_output == instructions
+    puts "PROGRAM_OUTPUT: #{program_output}"
+    false
   end
 
   def to_state
-    "#{a} #{b} #{c} #{ip}"
+    [a,b,c,ip,program_output]
   end
 
   def execute_instruction(ins, operand)
@@ -99,6 +95,32 @@ class Machine
   end
 end
 
+def print_instructions(instructions)
+  combos = [0,1,2,3,"A","B","C"]
+  instructions.each_slice(2) do |ins, operand|
+    case ins
+    when ADV
+      puts "A = A / 2**#{combos[operand]}"
+    when BXL
+      puts "B = B ^ #{operand}"
+    when BST
+      puts "B = #{combos[operand]} % 8"
+    when JNZ
+      puts "JUMP TO #{operand} if A != 0"
+    when BXC
+      puts "B = B ^ C"
+    when OUT
+      puts "OUTPUT <<  #{combos[operand]} % 8"
+    when BDV
+      puts "B = A / 2**#{combos[operand]}"
+    when CDV
+      puts "C = A / 2**#{combos[operand]}"
+    else
+      raise "UNKNOWN INSTRUCTION #{ins}"
+    end
+  end
+end
+
 Class.new(Minitest::Test) do
   define_method :test_evaluate do
     assert_equal(
@@ -121,10 +143,65 @@ Class.new(Minitest::Test) do
 
   define_method :test_execute_with_short_circuit do
     assert(
-      Machine.new(Debugger.new(117440,0,0,[0,3,5,4,3,0])).execute_with_short_circuit
+                                                                                     Machine.new(Debugger.new(117440,0,0,[0,3,5,4,3,0])).execute_with_short_circuit
     )
     refute(
-      Machine.new(Debugger.new(20,0,0,[0,3,5,4,3,0])).execute_with_short_circuit
+                                                                                 Machine.new(Debugger.new(20,0,0,[0,3,5,4,3,0])).execute_with_short_circuit
     )
   end
 end
+
+def find_a
+  [
+0303307501442463,
+0303307501472463,
+0303307511026463,
+0303307511326463,
+0303307511422463,
+0303307511426463,
+0303307511442463,
+0303307511472463,
+0303307701442463,
+0303307701472463,
+0305647501442463,
+0305647501472463,
+0305647511026463,
+0305647511326463,
+0305647511422463,
+0305647511426463,
+0305647511442463,
+0305647511472463,
+0305647701442463,
+0305647701472463,
+0315047501442463,
+0315047501472463,
+0315047511026463,
+0315047511326463,
+0315047511422463,
+0315047511426463,
+0315047511442463,
+0315047511472463,
+0315047701442463,
+0315047701472463,
+0315647501442463,
+0315647501472463,
+0315647511026463,
+0315647511326463,
+0315647511422463,
+0315647511426463,
+0315647511442463,
+0315647511472463,
+0315647701442463,
+0315647701472463,
+].each do |i|
+  a = i * 8
+  0.upto(7).each do |inc|
+    num = a + inc
+    print "RUNNING WITH 0#{num.to_s(8)}, "
+    Machine.new(Debugger.new(num, 0, 0, [2,4,1,5,7,5,1,6,4,3,5,5,0,3,3,0])).execute_with_short_circuit
+  end
+end
+end
+
+#print_instructions([2,4,1,5,7,5,1,6,4,3,5,5,0,3,3,0])
+find_a
