@@ -156,5 +156,3 @@ def find_a
   end
   nums[17].min
 end
-
-puts "A: #{find_a}"
