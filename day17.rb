@@ -33,10 +33,6 @@ class Machine
     program_output
   end
 
-  def to_state
-    [a,b,c,ip,program_output]
-  end
-
   def execute_instruction(ins, operand)
     case ins
     when ADV
@@ -135,7 +131,7 @@ Class.new(Minitest::Test) do
 
 
   define_method :test_find_a do
-    assert_equal(107416732707226, find_a)
+    assert_equal(107_416_732_707_226, find_a)
   end
 end
 
