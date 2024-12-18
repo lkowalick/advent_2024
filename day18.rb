@@ -126,8 +126,14 @@ def union(union_find, coord1, coord2)
   parent1[:size] += parent2[:size]
 end
 
+def part_two(data)
+  grid = create_grid(data)
+  blocks = get_blocks(data[:data])
+  part_two_helper(grid, blocks.reverse)
+end
+
 # grid should be with maximal bytes, blocks is backwards)
-def part_two(grid, blocks)
+def part_two_helper(grid, blocks)
   union_find = {}
   grid.each_index do |i|
     grid.each_index do |j|
@@ -170,13 +176,11 @@ Class.new(Minitest::Test) do
 
   define_method :test_dijkstra do
     assert_equal(22, dijkstra(create_grid(test_data, 12)))
+    assert_equal(322, dijkstra(create_grid(real_data, 1024)))
   end
 
   define_method :test_part_two do
-    grid = create_grid(test_data)
-    blocks = get_blocks(test_data[:data])
-    assert_equal([6,1], part_two(grid, blocks.reverse))
+    assert_equal([6,1], part_two(test_data))
+    assert_equal([60,21], part_two(real_data))
   end
 end
-
-puts "PART 1: #{dijkstra(create_grid(real_data, 1024))}"
