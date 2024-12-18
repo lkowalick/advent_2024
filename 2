@@ -35,18 +35,13 @@ test_data = { data: <<~TEST.chomp, dimension: 7 }
 2,0
 TEST
 
-def create_grid(input, limit = 99999)
+def create_grid(input, limit)
   input => { data:, dimension: }
-  blocks = get_blocks(data, limit)
-  blocks.each_with_object(Array.new(dimension) { Array.new(dimension) { "." } }) do |(i,j), grid|
+  blocks = data.each_line.map { |l| l.chomp.scan(/\d+/).map(&:to_i).reverse }
+  blocks[0,limit].each_with_object(Array.new(dimension) { Array.new(dimension) { "." } }) do |(i,j), grid|
     grid[i][j] = "#"
   end
 end
-
-def get_blocks(data, limit = 99999)
-  data.each_line.map { |l| l.chomp.scan(/\d+/).map(&:to_i).reverse }[0,limit]
-end
-
 
 def grid_to_s(grid)
   grid.map { |row| row.join("") }.join("\n")
@@ -122,7 +117,7 @@ def union(union_find, coord1, coord2)
     parent1, parent2 = parent2, parent1
   end
 
-  parent2[:parent] = parent1[:id]
+  parent2[:parent] = parent1
   parent1[:size] += parent2[:size]
 end
 
@@ -131,28 +126,28 @@ def part_two(grid, blocks)
   union_find = {}
   grid.each_index do |i|
     grid.each_index do |j|
-      next if grid.dig(i,j) == "#"
       make(union_find, [i,j])
       neighbors(grid, i, j).each do |neighbor|
-        make(union_find, neighbor)
-        union(union_find, [i,j], neighbor)
+
       end
+
+
+
     end
   end
 
-  last = [grid.length - 1, grid.first.length - 1]
+  # loop through the grid, MAKE-ing new union find trees
+  # for each element that isn't a #, and UNIONng each
+  # each element with its neighbors
 
-  raise "NOT SEPARATED" if find(union_find, [0,0]) == find(union_find, last)
+  # assert that the start and end point are in separate trees
 
-  blocks.each do |i,j|
-    grid[i][j] = "."
-    make(union_find, [i,j])
-    neighbors(grid, i, j).each do |neighbor|
-      make(union_find, neighbor)
-      union(union_find, [i,j], neighbor)
-    end
-    return [i,j].reverse if find(union_find, [0,0]) == find(union_find, last)
-  end
+  # loop over blocks
+  # For each block MAKE a new union find element
+  # UNION block with each of its neighbors represented in the existing
+  # union-find structure
+  #
+  # IF the start and end are in the same union-find tree, return the block reversed
 end
 
 Class.new(Minitest::Test) do
@@ -170,12 +165,6 @@ Class.new(Minitest::Test) do
 
   define_method :test_dijkstra do
     assert_equal(22, dijkstra(create_grid(test_data, 12)))
-  end
-
-  define_method :test_part_two do
-    grid = create_grid(test_data)
-    blocks = get_blocks(test_data[:data])
-    assert_equal([6,1], part_two(grid, blocks.reverse))
   end
 end
 
