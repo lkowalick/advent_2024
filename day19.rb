@@ -46,43 +46,35 @@ def pattern_possible?(pattern, cache)
   cache.fetch(pattern)
 end
 
-def pattern_possible?(pattern, cache)
-  unless cache.key?(pattern)
-    cache[pattern] = 1.upto(pattern.length - 1).any? do |i|
-      pattern_possible?(pattern[0...i], cache) && pattern_possible?(pattern[i..], cache)
-    end
-  end
-  cache.fetch(pattern)
-end
-
 def sum_ways(parsed_input)
   parsed_input => { inventory:, patterns: }
-  cache = Hash.new { |h,k| h[k] = 0 }
+  cache = Hash.new(0)
   cache[""] = 1
+  backwards_inventory_trie = {}
+
   inventory.each do |inv|
-    cache[inv] += 1
-    1.upto(inv.length - 1).each do |i|
-      cache[inv] += cache[inv[0...i]] * cache[inv[i..]]
+    node = backwards_inventory_trie
+    inv.reverse.each_char do |char|
+      node[char] ||= {}
+      node = node[char]
     end
-  end
-  inventory.each do |inv|
-    patterns.each do |pattern|
-      if pattern.end_with?(inv)
-        cache[pattern] += cache[pattern[-(inv.length)..]] * cache[inv]
-      end
-    end
+    node[:match] = true
   end
 
-  patterns.sum { |p| cache[p] }
+  patterns.sum { |p| num_ways(p, backwards_inventory_trie, cache) }
 end
 
-def num_ways(pattern, cache)
-  unless cache.key?(pattern)
-    cache[pattern] = 1.upto(pattern.length - 1).sum do |i|
-      num_ways(pattern[0...i], cache) *  num_ways(pattern[i..], cache)
-    end
+def num_ways(pattern, backwards_inventory_trie, cache)
+  return cache[pattern] if cache.key?(pattern)
+  i = 0
+  node = backwards_inventory_trie
+  while i < pattern.length do
+    i += 1
+    node = node[pattern[-i]]
+    break unless node
+    cache[pattern] += num_ways(pattern[0...-i], backwards_inventory_trie, cache) if node[:match]
   end
-  cache.fetch(pattern).tap { |num| puts "returning #{num} for #{pattern}" }
+  cache[pattern]
 end
 
 Class.new(Minitest::Test) do
@@ -98,6 +90,7 @@ Class.new(Minitest::Test) do
 
   define_method :test_sum_ways do
     assert_equal(16, sum_ways(parse_input(test_data)))
+    assert_equal(595_975_512_785_325, sum_ways(parse_input(real_data)))
   end
 end
 
