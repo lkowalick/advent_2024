@@ -54,5 +54,7 @@ Class.new(Minitest::Test) do
 
   define_method :test_num_possible_patterns do
     assert_equal(6, num_possible_patterns(parse_input(test_data)))
+    assert_equal(242, num_possible_patterns(parse_input(real_data)))
   end
 end
+
