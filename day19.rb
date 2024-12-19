@@ -26,9 +26,17 @@ def parse_input(input)
   { inventory:, patterns: }
 end
 
+def num_possible_patterns(parsed_input)
+  0
+end
+
 Class.new(Minitest::Test) do
   define_method :test_parse_input do
     assert_equal(%w(r wr b g bwu rb gb br), parse_input(test_data)[:inventory])
     assert_equal(%w(brwrr bggr gbbr rrbgbr ubwu bwurrg brgr bbrgwb), parse_input(test_data)[:patterns])
+  end
+
+  define_method :test_num_possible_patterns do
+    assert_equal(6, num_possible_patterns(parse_input(test_data)))
   end
 end
