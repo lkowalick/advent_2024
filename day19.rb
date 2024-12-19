@@ -38,7 +38,12 @@ def num_possible_patterns(parsed_input)
 end
 
 def pattern_possible?(pattern, cache)
-  false
+  unless cache.key?(pattern)
+    cache[pattern] = 1.upto(pattern.length - 1).any? do |i|
+      pattern_possible?(pattern[0...i], cache) && pattern_possible?(pattern[i..], cache)
+    end
+  end
+  cache.fetch(pattern)
 end
 
 Class.new(Minitest::Test) do
