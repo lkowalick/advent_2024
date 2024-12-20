@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require "minitest/autorun"
+require "algorithms"
 
 FILENAME = "./day20_input.txt"
 
@@ -42,8 +43,55 @@ def render(grid)
   grid.map { |row| row.join("") }.join("\n")
 end
 
+def get_reachable_vertices(input)
+  input => { grid:, start: }
+  vertices = Set.new
+  stack = [start]
+  until stack.empty?
+    coord = stack.pop
+    next if vertices.include?(coord)
+    vertices << coord
+    stack.push(*neighbors(grid, *coord))
+  end
+  vertices
+end
+
+def neighbors(grid, i, j)
+  [
+    [i-1,j],
+    [i+1,j],
+    [i,j-1],
+    [i,j+1],
+  ].filter do |i,j|
+    0 <= i && i < grid.length && 0 <= j && j < grid.first.length && grid[i][j] != "#"
+  end
+end
+
 def dijkstra(input)
-  0
+  input => { grid:, start:, finish: }
+  dist = {}
+  queue = Containers::MinHeap.new
+  visited = Set.new
+  get_reachable_vertices(input).each do |vertex|
+    dist[vertex] = Float::INFINITY
+    dist[vertex] = 0 if vertex == start
+    queue.push(dist.fetch(vertex), vertex)
+  end
+
+  until queue.empty?
+    coord = queue.pop
+    next if visited.include?(coord)
+    visited << coord
+    neighbors(grid, *coord).each do |neighbor|
+      new_dist = dist.fetch(coord) + 1
+      if new_dist < dist.fetch(neighbor)
+        dist[neighbor] = new_dist
+        queue.push(dist.fetch(neighbor), neighbor)
+      end
+    end
+  end
+
+  return dist.fetch(finish)
 end
 
 Class.new(Minitest::Test) do
