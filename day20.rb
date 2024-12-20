@@ -67,6 +67,17 @@ def neighbors(grid, i, j)
   end
 end
 
+def nnneighbors(grid, i, j)
+  [
+    [i-2,j],
+    [i+2,j],
+    [i,j-2],
+    [i,j+2],
+  ].filter do |i,j|
+    0 <= i && i < grid.length && 0 <= j && j < grid.first.length && grid[i][j] != "#"
+  end
+end
+
 def dijkstra(input)
   input => { grid:, start:, finish: }
   dist = {}
@@ -91,7 +102,34 @@ def dijkstra(input)
     end
   end
 
-  return dist.fetch(finish)
+  return [dist.fetch(finish), dist]
+end
+
+def backwards_dijkstra(input)
+  input[:start], input[:finish] = input[:finish], input[:start]
+  dijkstra(input).tap do
+    input[:finish], input[:start] = input[:start], input[:finish]
+  end
+end
+
+def part_1(input, threshold = 1)
+  shorter = Set.new
+  shortest, dist_start = dijkstra(input)
+  _, dist_finish = backwards_dijkstra(input)
+  input[:grid].each_with_index do |row, i|
+    row.each_with_index do |elt, j|
+      next if elt == "#"
+      nnneighbors(input[:grid], i, j).each do |neighbor|
+        next unless dist_start.fetch([i,j]) < dist_start.fetch(neighbor)
+        next unless dist_finish.fetch([i,j]) > dist_finish.fetch(neighbor)
+        gap = (dist_start.fetch([i,j]) - dist_finish.fetch(neighbor)).abs
+        if gap > 2 && dist_start.fetch([i,j]) + dist_finish.fetch(neighbor) + 2 <= shortest - threshold
+          shorter << [(neighbor.first + i)/2, (neighbor.last + j)/2]
+        end
+      end
+    end
+  end
+  shorter.size
 end
 
 Class.new(Minitest::Test) do
@@ -102,7 +140,16 @@ Class.new(Minitest::Test) do
   end
 
   define_method :test_dijkstra do
-    assert_equal(84, dijkstra(parse_input(test_data)))
+    assert_equal(84, dijkstra(parse_input(test_data)).first)
+  end
+
+  define_method :test_part_1 do
+    assert_equal(1, part_1(parse_input(test_data), 64))
+    assert_equal(1, part_1(parse_input(test_data), 41))
+    assert_equal(2, part_1(parse_input(test_data), 40))
+    assert_equal(3, part_1(parse_input(test_data), 38))
+    assert_equal(4, part_1(parse_input(test_data), 36))
+    assert_equal(5, part_1(parse_input(test_data), 20))
   end
 end
 
