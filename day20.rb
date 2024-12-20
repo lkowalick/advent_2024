@@ -67,13 +67,18 @@ def neighbors(grid, i, j)
   end
 end
 
-def nnneighbors(grid, i, j)
-  [
-    [i-2,j],
-    [i+2,j],
-    [i,j-2],
-    [i,j+2],
-  ].filter do |i,j|
+def neighbors_n(grid, i, j, n)
+  2.upto(n).flat_map do |distance|
+    0.upto(distance).flat_map do |i_offset|
+      j_offset = distance - i_offset
+      [
+        [i+i_offset,j+j_offset],
+        [i+i_offset,j-j_offset],
+        [i-i_offset,j+j_offset],
+        [i-i_offset,j-j_offset],
+      ]
+    end
+  end.filter do |i,j|
     0 <= i && i < grid.length && 0 <= j && j < grid.first.length && grid[i][j] != "#"
   end
 end
@@ -112,19 +117,21 @@ def backwards_dijkstra(input)
   end
 end
 
-def part_1(input, threshold = 1)
+def get_unique_cheats(input, shortcut_length, threshold)
   shorter = Set.new
   shortest, dist_start = dijkstra(input)
   _, dist_finish = backwards_dijkstra(input)
   input[:grid].each_with_index do |row, i|
     row.each_with_index do |elt, j|
       next if elt == "#"
-      nnneighbors(input[:grid], i, j).each do |neighbor|
+      neighbors_n(input[:grid], i, j, shortcut_length).each do |neighbor|
+        n_i, n_j = neighbor
         next unless dist_start.fetch([i,j]) < dist_start.fetch(neighbor)
         next unless dist_finish.fetch([i,j]) > dist_finish.fetch(neighbor)
-        gap = (dist_start.fetch([i,j]) - dist_finish.fetch(neighbor)).abs
-        if gap > 2 && dist_start.fetch([i,j]) + dist_finish.fetch(neighbor) + 2 <= shortest - threshold
-          shorter << [(neighbor.first + i)/2, (neighbor.last + j)/2]
+        gap = shortest - (dist_start.fetch([i,j]) + dist_finish.fetch(neighbor))
+        distance_between = (i - n_i).abs + (j - n_j).abs
+        if gap > distance_between && dist_start.fetch([i,j]) + dist_finish.fetch(neighbor) + distance_between <= shortest - threshold
+          shorter << [[i,j],neighbor].sort
         end
       end
     end
@@ -144,14 +151,24 @@ Class.new(Minitest::Test) do
   end
 
   define_method :test_part_1 do
-    assert_equal(1, part_1(parse_input(test_data), 64))
-    assert_equal(1, part_1(parse_input(test_data), 41))
-    assert_equal(2, part_1(parse_input(test_data), 40))
-    assert_equal(3, part_1(parse_input(test_data), 38))
-    assert_equal(4, part_1(parse_input(test_data), 36))
-    assert_equal(5, part_1(parse_input(test_data), 20))
-    assert_equal(1351, part_1(parse_input(test_data), 100))
+    assert_equal(1, get_unique_cheats(parse_input(test_data), 2, 64))
+    assert_equal(1, get_unique_cheats(parse_input(test_data), 2, 41))
+    assert_equal(2, get_unique_cheats(parse_input(test_data), 2, 40))
+    assert_equal(3, get_unique_cheats(parse_input(test_data), 2, 38))
+    assert_equal(4, get_unique_cheats(parse_input(test_data), 2, 36))
+    assert_equal(5, get_unique_cheats(parse_input(test_data), 2,  20))
+    assert_equal(1351, get_unique_cheats(parse_input(real_data), 2, 100).tap { |part_one| puts "\nPART ONE: #{part_one}" })
+  end
+
+  define_method :test_part_2 do
+    assert_equal(3, get_unique_cheats(parse_input(test_data), 20, 76))
+    assert_equal(3, get_unique_cheats(parse_input(test_data), 20, 75))
+    assert_equal(7, get_unique_cheats(parse_input(test_data), 20, 74))
+    assert_equal(7, get_unique_cheats(parse_input(test_data), 20, 73))
+    assert_equal(29, get_unique_cheats(parse_input(test_data), 20, 72))
+    assert_equal(29, get_unique_cheats(parse_input(test_data), 20, 71))
+    assert_equal(41, get_unique_cheats(parse_input(test_data), 20, 70))
+    assert_equal(966130, get_unique_cheats(parse_input(real_data), 20, 100).tap { |part_two| puts "\nPART TWO: #{part_two}" })
   end
 end
 
-puts part_1(parse_input(real_data), 100)
