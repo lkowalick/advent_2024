@@ -150,6 +150,8 @@ Class.new(Minitest::Test) do
     assert_equal(3, part_1(parse_input(test_data), 38))
     assert_equal(4, part_1(parse_input(test_data), 36))
     assert_equal(5, part_1(parse_input(test_data), 20))
+    assert_equal(1351, part_1(parse_input(test_data), 100))
   end
 end
 
+puts part_1(parse_input(real_data), 100)
