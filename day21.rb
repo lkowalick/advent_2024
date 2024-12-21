@@ -16,6 +16,13 @@ class EntryPad
   end
 
   def enter(entry)
+    entry.each_char do |char|
+      enter_single(char)
+    end
+    moves
+  end
+
+  private def enter_single(entry)
     new_position = self.class.entries.fetch(entry)
     di = new_position.first - position.first
     dj = new_position.last - position.last
@@ -97,6 +104,12 @@ class TestCode < Minitest::Test
     assert_equal(%w(< A ^ A), numpad.enter("2"))
     assert_equal(%w(< A ^ A > ^ ^ A), numpad.enter("9"))
     assert_equal(%w(< A ^ A > ^ ^ A v v v A), numpad.enter("A"))
+  end
+
+  def test_moving_on_arrow_keys
+    arrow_keys = ArrowKeys.new
+
+
   end
 end
 
