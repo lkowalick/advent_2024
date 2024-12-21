@@ -100,10 +100,7 @@ end
 class TestCode < Minitest::Test
   def test_moving_on_numpad
     numpad = NumPad.new
-    assert_equal(%w(< A), numpad.enter("0"))
-    assert_equal(%w(< A ^ A), numpad.enter("2"))
-    assert_equal(%w(< A ^ A > ^ ^ A), numpad.enter("9"))
-    assert_equal(%w(< A ^ A > ^ ^ A v v v A), numpad.enter("A"))
+    assert_equal(%w(< A ^ A > ^ ^ A v v v A), numpad.enter("029A"))
   end
 
   def test_moving_on_arrow_keys
