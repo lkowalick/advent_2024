@@ -42,11 +42,11 @@ class NumPad
     di = new_position.first - position.first
     dj = new_position.last - position.last
 
-    self.moves += %w(>) * dj.abs if dj > 0
-    self.moves += %w(v) * di.abs if di > 0
-    self.moves += %w(^) * di.abs if di < 0
-    self.moves += %w(<) * dj.abs if dj < 0
-    self.moves << "A"
+    moves.concat(%w(>) * dj.abs) if dj > 0
+    moves.concat(%w(v) * di.abs) if di > 0
+    moves.concat(%w(^) * di.abs) if di < 0
+    moves.concat(%w(<) * dj.abs) if dj < 0
+    moves << "A"
 
     self.position = new_position
     moves
